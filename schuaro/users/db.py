@@ -1,7 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel
 from fastapi import Depends
-
+from . import glob
 
 # Import utilities
 from . import util
@@ -19,13 +19,13 @@ fake_db = [
 
 
 
-def get_user_mock(user: util.ParsedUsername) -> Optional[User]:
+def get_user_mock(user: glob.ParsedUsername) -> Optional[glob.User]:
     """
         Retrieves a fake user from the fake database
     """
     for u in fake_db:
         # Load user
-        u_load = User(**u)
+        u_load = glob.User(**u)
 
         # Check username and tag
         if u_load.tag == user.tag and u_load.username == user.username:
@@ -34,7 +34,7 @@ def get_user_mock(user: util.ParsedUsername) -> Optional[User]:
     return None
 
 
-def get_user(user: util.ParsedUsername) -> Optional[User]:
+def get_user(user: glob.ParsedUsername) -> Optional[glob.User]:
     """
         Retrieves a user from username and tag
     """
@@ -42,7 +42,7 @@ def get_user(user: util.ParsedUsername) -> Optional[User]:
     return get_user_mock(user)
 
 
-def verify_user(user: util.ParsedUsername, password: str) -> Optional[User]:
+def verify_user(user: glob.ParsedUsername, password: str) -> Optional[glob.User]:
     """
         Verify the user and returns.
         If the user is valid, returns the user.

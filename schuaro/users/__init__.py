@@ -16,6 +16,8 @@ from . import db
 # Import utilites
 from . import util
 
+from . import glob
+
 
 
 # Get the router ready
@@ -48,14 +50,14 @@ async def get_current_user(token: str = Depends(oauth2_password_bearer)):
     )
     return g_user
 
-async def get_current_active_user(current_user: db.User = Depends(get_current_user)):
+async def get_current_active_user(current_user: glob.User = Depends(get_current_user)):
     
     return current_user
 
 
 @router.post(
     "/token",
-    response_model=util.Token)
+    response_model=glob.Token)
 async def token_auth(form_data: OAuth2PasswordRequestForm = Depends()):
     """
         OAuth Password Bearer authentication. Returns a token.
@@ -81,6 +83,6 @@ async def token_auth(form_data: OAuth2PasswordRequestForm = Depends()):
     return token
 
 @router.get("/me")
-async def read_users_me(current_user: db.User = Depends(get_current_active_user)):
+async def read_users_me(current_user: glob.User = Depends(get_current_active_user)):
     
     return current_user

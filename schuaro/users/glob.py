@@ -1,15 +1,12 @@
 from pydantic import BaseModel
 from typing import Optional
 
-class UserData(BaseModel):
-    req_scope: str
+
 
 class User(BaseModel):
     username: str
     tag: int
-    email: str
     password: str
-    data_dict: dict[str:UserData]
 
 
 
