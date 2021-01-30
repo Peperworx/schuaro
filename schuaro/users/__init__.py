@@ -7,6 +7,9 @@ from fastapi import APIRouter
 # Import library for permissions
 from . import permissions
 
+# Import library to handle encryption
+from . import encryption
+
 # Import library to access database
 from . import db
 
