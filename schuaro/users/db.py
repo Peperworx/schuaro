@@ -1,6 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel
 from fastapi import Depends
+import hashlib
 from . import glob
 
 # Import utilities
@@ -10,7 +11,8 @@ fake_db = [
     {
         "username":"test",
         "tag":0x8188,
-        "password":"test"
+        "password":"9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+        "active":True
     }
 ]
 
@@ -57,7 +59,7 @@ def verify_user(user: glob.ParsedUsername, password: str) -> Optional[glob.User]
         return None
     
     # Check password
-    if password != ret_user.password:
+    if hashlib.sha256(password.encode()).hexdigest() != ret_user.password:
         return None
 
     # Return

@@ -7,7 +7,11 @@ class User(BaseModel):
     username: str
     tag: int
     password: str
+    active: bool
 
+class UserPub(BaseModel):
+    username: str
+    tag: int
 
 
 class ParsedUsername(BaseModel):
