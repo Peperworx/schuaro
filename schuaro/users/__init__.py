@@ -1,37 +1,34 @@
+from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, SecurityScopes
+
+from pydantic import BaseModel
 from fastapi import APIRouter
 
+# Import library for permissions
+from . import permissions
 
+# Import library to access database
+from . import db
+
+
+
+# Get the router ready
 router = APIRouter(prefix="/users")
 
 
-
-@router.get("/{username}", tags=["users"])
-async def index(username: str):
-    """
-        Retrieves the public information of a user.
-        This includes but is not limited to:
-        - Username (duh)
-        - User ID
-        - Public Stats
-            - Level, KD, Leaderboard Placement
-    """
-    return {}
-
-@router.get("/private", tags=["users"])
-async def private(token: str):
-    """
-        Retrieves the private information of the current user.
-        This includes chats, private stats, etc.
-    """
-    print(token)
-    return {}
+# OAuth2 password bearer scheme
+oauth2_password_bearer = OAuth2PasswordBearer(
+    tokenUrl="token",
+    scopes = permissions.scopes
+)
 
 
-@router.post("/auth")
-async def auth():
-    """
-        Authenticates the user based off of an username and password.
 
-        Returns a token.
+
+@router.post("/token")
+async def token_auth(form_data: OAuth2PasswordRequestForm = Depends()):
     """
+        OAuth Password Bearer authentication. Returns a token.
+    """
+    print(form_data.__dict__)
     return {}
