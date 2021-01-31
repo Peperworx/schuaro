@@ -53,7 +53,7 @@ async def get_current_user(
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate":authvalue}
         )
-    g_user = db.get_user(
+    g_user = await db.get_user(
         glob.ParsedUsername(
             success = True,
             username = user.username,
@@ -129,7 +129,7 @@ async def read_users_other(username:str, tag:str, current_user: glob.User = Secu
 
 
     # If we are all good, lets fetch the user
-    user = db.get_user(
+    user = await db.get_user(
         glob.ParsedUsername(
             success=True,
             username=username,

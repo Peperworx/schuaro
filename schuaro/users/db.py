@@ -47,9 +47,10 @@ async def get_user_mongo(user: glob.ParsedUsername) -> Optional[glob.User]:
     col = db["schuaro-users"]
     
     # Find the user
-    u = col.find(
+    u = col.find_one(
         {
-            "username": user.username
+            "username":user.username,
+            "tag":user.tag
         }
     )
     
@@ -58,7 +59,7 @@ async def get_user_mongo(user: glob.ParsedUsername) -> Optional[glob.User]:
         return None
     
     # If it does, return it as a user
-    return glob.User(*u)
+    return glob.User(**u)
     
 
 
