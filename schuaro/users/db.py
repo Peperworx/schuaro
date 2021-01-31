@@ -19,7 +19,8 @@ fake_db = [
             "user:read",
             "ability:friends",
             "ability:party",
-            "ability:match_request"
+            "ability:match_request",
+            "ability:chat"
         ]
     }
 ]
