@@ -98,7 +98,7 @@ async def token_auth(form_data: OAuth2PasswordRequestForm = Depends()):
     
     # If we are still here, we need to generate and return a token
     token = util.generate_token(u_verify,form_data,scopes=form_data.scopes)
-    print(token)
+    
     # Return the token along with other details
     return token
 
@@ -166,7 +166,9 @@ async def read_users_other(username:str, tag:str, current_user: glob.User = Secu
 async def create_user(
     response: Response,
     username: str = Form(default=None),
-    password: str = Form(default=None)
+    password: str = Form(default=None),
+    client_id: str = Form(default=None),
+    client_secret: str = Form(default=None)
     ):
     """
         Creates a user with default permissions
@@ -179,6 +181,26 @@ async def create_user(
             detail="Uh, you need to supply both a username AND a password"
         )
     
+    # Validate clientid
+    client_validated = await db.validate_client(client_id,client_secret)
+    
+    # If unable to validate client, fail
+    if not client_validated:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid client"
+        )
+
+    # Check permissions
+    if "grant:user_defaults" not in client_validated.permissions or \
+        "create:user" not in client_validated.permissions:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Client does not have required permissions"
+        )
+    
+    # Now we can continue
+
     # Lets parse the username.
     uname_parsed = util.parse_username(username)
     
@@ -226,4 +248,14 @@ async def create_user(
     return {
         "success": True
     }
-    
+
+@router.post("/client/generate")
+async def generate_client(current_user: glob.User = Security(get_current_user,scopes=["ability:issue_client","ability:administrator"])):
+    """
+        Generates a client. Requires admin, as client has full admin for now.
+    """
+
+    # Generate the client
+    client_generated = await db.generate_client()
+
+    return client_generated

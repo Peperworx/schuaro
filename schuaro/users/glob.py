@@ -63,6 +63,12 @@ class UserCreateErrors(Enum):
     RESERVED_NAME: int = 3
 
 
+class Client(BaseModel):
+    client_id: str
+    client_secret: str
+    permissions: list[str]
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str

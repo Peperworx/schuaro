@@ -4,6 +4,7 @@ import hashlib
 from . import glob
 from .. import config
 from pymongo import MongoClient
+import secrets
 
 # Import utilities
 from . import util
@@ -105,7 +106,7 @@ async def get_user(user: glob.ParsedUsername) -> Optional[glob.User]:
 async def create_user(
     user: glob.ParsedUsername, 
     password: str, 
-    permissions: list[str] = permissions.default_permissions
+    perms: list[str] = permissions.default_permissions
     ) -> Optional[glob.UserCreateErrors]:
     """
         Created a user, excluding reserved prefixes and suffixes.
@@ -138,7 +139,7 @@ async def create_user(
         "password":hashlib.sha256(password.encode()).hexdigest().lower(),
         "active": True,
         "public": True,
-        "permissions": permissions
+        "permissions": perms
     })
 
     # And add
@@ -175,5 +176,80 @@ async def verify_user(user: glob.ParsedUsername, password: str, scopes: list[str
     # Return
     return ret_user
 
+async def generate_client(perms = permissions.default_clients) -> glob.Client:
+    """
+        Generates a random clientid and secret
+    """
 
+    # Generate initial clientid
+    client_id = hex(secrets.randbits(256))[2:]
+    
+    # Grab the db and collection
+    db = await get_db()
+    col = db["schuaro-clients"]
+
+    # Modify clientid until it does not exist in db
+    while col.find_one({"client_id":client_id}):
+        client_id = hex(secrets.randbits(256))[2:]
+    
+    # Generate the client secret
+    client_secret = hex(secrets.randbits(256))[2:]
+
+    # Load into class
+    client = glob.Client(
+        client_id = client_id,
+        client_secret = hashlib.sha256(client_secret.encode()).hexdigest(), # Hash the client secret
+        permissions=perms
+    )
+
+    # Insert into database
+    col.insert_one(dict(client))
+
+    # We want to return the actual secret
+    client.client_secret = client_secret    
+
+    # Return
+    return client
+
+async def get_client(client_id: str) -> glob.Client:
+    # Get db and collection
+    db = await get_db()
+    col = db["schuaro-clients"]
+
+
+    # Find it
+    client = col.find_one(
+        {
+            "client_id": client_id
+        }
+    )
+
+    # Return it
+    return glob.Client(**client)
+
+async def validate_client(client_id: str, client_secret: str) -> Optional[glob.Client]:
+    """
+        Validates a client.
+    """
+
+    # If either is none, fail
+    if None in [client_id,client_secret]:
+        return None
+    
+    # Grab the client
+    client = await get_client(client_id)
+
+
+    # If it was not found, fail
+    if not client:
+        return None
+    
+
+    # Check the secret, and if it does not match, fail
+    if hashlib.sha256(client_secret.encode()).hexdigest().lower() != client.client_secret.lower():
+        return None
+    
+    # Return the client
+    return client
+    
 
