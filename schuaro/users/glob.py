@@ -9,11 +9,18 @@ class User(BaseModel):
     password: str
     active: bool
     permissions: list[str]
+    public: bool
+
+class UserMe(BaseModel):
+    username: str
+    tag: int
+    permissions: list[str]
+    active: bool
+    public: bool
 
 class UserPub(BaseModel):
     username: str
     tag: int
-    permissions: list[str]
 
 
 class ParsedUsername(BaseModel):
