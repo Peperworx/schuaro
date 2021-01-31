@@ -53,7 +53,7 @@ async def get_user_mongo(user: glob.ParsedUsername) -> Optional[glob.User]:
             "tag":user.tag
         }
     )
-    
+
     # If it does not exist, return none
     if not u:
         return None
@@ -102,7 +102,7 @@ async def verify_user(user: glob.ParsedUsername, password: str, scopes: list[str
         return None
     
     # Check password
-    if hashlib.sha256(password.encode()).hexdigest() != ret_user.password:
+    if hashlib.sha256(password.encode()).hexdigest().lower() != ret_user.password.lower():
         return None
     
     for scope in scopes:
