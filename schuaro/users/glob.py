@@ -4,6 +4,16 @@ from typing import Optional
 from . import permissions
 from enum import Enum
 
+
+
+class DeveloperType(Enum):
+    NODEV = 0
+    ADMIN = 1
+    DEVELOPER = 2
+    PLAYTESTER = 3
+    BETATESTER = 4
+    DEVPERSONAL = 6
+    
 class User(BaseModel):
     username: str
     tag: int
@@ -11,6 +21,7 @@ class User(BaseModel):
     active: bool
     permissions: list[str]
     public: bool
+    
 
 class UserMe(BaseModel):
     username: str
@@ -18,10 +29,13 @@ class UserMe(BaseModel):
     permissions: list[str]
     active: bool
     public: bool
+    developer: bool = False
+    developer_type: DeveloperType = DeveloperType.NODEV
 
 class UserPub(BaseModel):
     username: str
     tag: int
+    developer: bool
 
 
 class ReservedReason(Enum):

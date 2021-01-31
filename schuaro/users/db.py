@@ -32,9 +32,6 @@ fake_db = [
 
 
 
-
-
-
 async def get_db():
     client = MongoClient(
         config.settings.mongo_host,
@@ -78,8 +75,9 @@ async def get_reserved_mongo() -> list[glob.ReservedReason]:
     db = await get_db()
 
     col = db["schuaro-reserved"]
+    
 
-    return [glob.ReservedReason(**c) for c in col.find()]
+    return [glob.Reserved(**c) for c in col.find()]
 
 async def get_user_mock(user: glob.ParsedUsername) -> Optional[glob.User]:
     """
@@ -115,16 +113,16 @@ async def create_user(
 
     # Retrieve all reserved pre/suffixes
     resed = await get_reserved_mongo()
-
     # Check name
     for res in resed:
-        # If it starts with, return error
-        if user.startswith(res):
-            return glob.UserCreateErrors.RESERVED_PREFIX
-        elif user.endsswith(res):
-            return glob.UserCreateErrors.RESERVED_SUFFIX
-        elif user == res:
+        # If it starts with, endswith, or is a reserved name, fail
+        if user.username.lower() == res.reserved:
             return glob.UserCreateErrors.RESERVED_NAME
+        elif user.username.lower().startswith(res.reserved):
+            return glob.UserCreateErrors.RESERVED_PREFIX
+        elif user.username.lower().endswith(res.reserved):
+            return glob.UserCreateErrors.RESERVED_SUFFIX
+        
     
     # If we are here, we can go ahead and create
     # Grab the db
@@ -134,18 +132,18 @@ async def create_user(
     col = db["schuaro-users"]
 
     # Generate the user
-    u = {
+    u = glob.User(**{
         "username":user.username.lower(),  # Lowercaseify username
         "tag": user.tag,
         "password":hashlib.sha256(password.encode()).hexdigest().lower(),
         "active": True,
         "public": True,
         "permissions": permissions
-    }
+    })
 
     # And add
     insed = col.insert_one(
-        u
+        dict(u)
     )
 
     # Return no error
@@ -176,4 +174,6 @@ async def verify_user(user: glob.ParsedUsername, password: str, scopes: list[str
 
     # Return
     return ret_user
+
+
 
