@@ -77,48 +77,13 @@ async def get_current_user(
 @router.post(
     "/token",
     response_model=glob.Token)
-async def token_auth(request: Request,form_data: OAuth2PasswordRequestForm = Depends()):
+async def token_auth(request: Request):
     """
-        OAuth Password Bearer authentication. Returns a token.
+        OAuth authentication. Returns a token.
     """
-    bdy = await request.body()
-    # Confirm clientID
-    client_validated = await db.validate_client(form_data.client_id,form_data.client_secret)
     
-    # If unable to validate client, fail
-    if not client_validated:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid client"
-        )
-
-    # Check permissions
-    if "grant:user_defaults" not in client_validated.permissions or \
-        "create:user" not in client_validated.permissions:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Client does not have required permissions"
-        )
-
-    # Parse out the username
-    u_parsed = util.parse_username(form_data.username)
-
-    # Verify the user
-    u_verify = await db.verify_user(u_parsed, form_data.password, form_data.scopes)
-
-    # If not valid, reaise exception
-    if u_verify == None:
-        
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Unable to verify login credentials"
-        )
     
-    # If we are still here, we need to generate and return a token
-    token = util.generate_token(u_verify,form_data,scopes=form_data.scopes)
-    
-    # Return the token along with other details
-    return token
+
 
 @router.get("/me")
 async def read_users_me(current_user: glob.User = Security(get_current_user,scopes=["me"])):
