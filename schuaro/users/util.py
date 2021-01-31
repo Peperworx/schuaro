@@ -59,7 +59,7 @@ def parse_username(username):
         tag=tag
     )
 
-def generate_token(user,ttl:int=30,scopes:list['str']=[]) -> glob.Token:
+def generate_token(user,form_data,ttl:int=30,scopes:list['str']=[]) -> glob.Token:
 
 
     # Initialize Token Data class
@@ -78,7 +78,7 @@ def generate_token(user,ttl:int=30,scopes:list['str']=[]) -> glob.Token:
     # And the tag
     to_enc.tag = user.tag
 
-    
+    to_enc.scopes=scopes
     
 
     # Encode the token

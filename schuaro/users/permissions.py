@@ -1,3 +1,3 @@
 scopes = {
-    "test": "Super Simple test permissions"
+    "me": "Permission to access self data"
 }

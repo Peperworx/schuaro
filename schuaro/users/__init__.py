@@ -1,5 +1,9 @@
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, SecurityScopes
+from fastapi import Depends, HTTPException, status, Security
+from fastapi.security import (
+    OAuth2PasswordBearer, 
+    OAuth2PasswordRequestForm, 
+    SecurityScopes,
+)
 
 from pydantic import BaseModel
 from fastapi import APIRouter
@@ -20,26 +24,34 @@ from . import glob
 
 
 
-# Get the router ready
-router = APIRouter(prefix="/users")
+
 
 
 # OAuth2 password bearer scheme
 oauth2_password_bearer = OAuth2PasswordBearer(
-    tokenUrl="users/token"
+    tokenUrl="users/token",
+    scopes=permissions.scopes
 )
 
 
+# Get the router ready
+router = APIRouter(prefix="/users")
 
 
-
-async def get_current_user(token: str = Depends(oauth2_password_bearer)):
+async def get_current_user(
+    security_scopes: SecurityScopes,
+    token: str = Depends(oauth2_password_bearer)
+    ):
+    if security_scopes.scopes:
+        authvalue = f"Bearer scope=\"{security_scopes.scope_str}\""
+    else:
+        authvalue = f"Bearer"
     user = util.decode_token(token)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate":"Bearer"}
+            headers={"WWW-Authenticate":authvalue}
         )
     g_user = db.get_user(
         glob.ParsedUsername(
@@ -48,11 +60,16 @@ async def get_current_user(token: str = Depends(oauth2_password_bearer)):
             tag = user.tag
         )
     )
+    for scope in security_scopes.scopes:
+        if scope not in user.scopes:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect permissions",
+                headers={"WWW-Authenticate":authvalue}
+            )
     return g_user
 
-async def get_current_active_user(current_user: glob.User = Depends(get_current_user)):
-    
-    return current_user
+
 
 
 @router.post(
@@ -77,13 +94,13 @@ async def token_auth(form_data: OAuth2PasswordRequestForm = Depends()):
         )
     
     # If we are still here, we need to generate and return a token
-    token = util.generate_token(u_verify)
+    token = util.generate_token(u_verify,scopes=form_data.scopes)
     print(token)
     # Return the token along with other details
     return token
 
 @router.get("/me")
-async def read_users_me(current_user: glob.User = Depends(get_current_active_user)):
+async def read_users_me(current_user: glob.User = Security(get_current_user,scopes=["me"])):
     
 
     # Censor the current user's data

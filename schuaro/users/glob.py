@@ -27,3 +27,4 @@ class TokenData(BaseModel):
     username: Optional[str] = None
     tag: Optional[str] = None
     expires: Optional[int] = None
+    scopes: list[str] = []
