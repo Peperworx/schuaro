@@ -84,7 +84,7 @@ async def token_auth(form_data: OAuth2PasswordRequestForm = Depends()):
     u_parsed = util.parse_username(form_data.username)
 
     # Verify the user
-    u_verify = db.verify_user(u_parsed, form_data.password)
+    u_verify = db.verify_user(u_parsed, form_data.password, form_data.scopes)
 
     # If not valid, reaise exception
     if u_verify == None:
@@ -94,7 +94,7 @@ async def token_auth(form_data: OAuth2PasswordRequestForm = Depends()):
         )
     
     # If we are still here, we need to generate and return a token
-    token = util.generate_token(u_verify,scopes=form_data.scopes)
+    token = util.generate_token(u_verify,form_data,scopes=form_data.scopes)
     print(token)
     # Return the token along with other details
     return token

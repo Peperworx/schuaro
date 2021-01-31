@@ -8,10 +8,12 @@ class User(BaseModel):
     tag: int
     password: str
     active: bool
+    permissions: list[str]
 
 class UserPub(BaseModel):
     username: str
     tag: int
+    permissions: list[str]
 
 
 class ParsedUsername(BaseModel):
