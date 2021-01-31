@@ -1,8 +1,8 @@
 from typing import Optional
-from pydantic import BaseModel
-from fastapi import Depends
 import hashlib
 from . import glob
+from .. import config
+from pymongo import MongoClient
 
 # Import utilities
 from . import util
@@ -27,10 +27,43 @@ fake_db = [
 
 
 
+async def get_db():
+    client = MongoClient(
+        config.settings.mongo_host,
+        config.settings.mongo_port
+    )
+    
+    # Grab the DB
+    db = client[config.settings.db_name]
+    
+    # Return the DB
+    return db
+
+
+async def get_user_mongo(user: glob.ParsedUsername) -> Optional[glob.User]:
+    db = await get_db()
+    
+    # Grab the collection
+    col = db["schuaro-users"]
+    
+    # Find the user
+    u = col.find(
+        {
+            "username": user.username
+        }
+    )
+    
+    # If it does not exist, return none
+    if not u:
+        return None
+    
+    # If it does, return it as a user
+    return glob.User(*u)
+    
 
 
 
-def get_user_mock(user: glob.ParsedUsername) -> Optional[glob.User]:
+async def get_user_mock(user: glob.ParsedUsername) -> Optional[glob.User]:
     """
         Retrieves a fake user from the fake database
     """
@@ -45,15 +78,15 @@ def get_user_mock(user: glob.ParsedUsername) -> Optional[glob.User]:
     return None
 
 
-def get_user(user: glob.ParsedUsername) -> Optional[glob.User]:
+async def get_user(user: glob.ParsedUsername) -> Optional[glob.User]:
     """
         Retrieves a user from username and tag
     """
 
-    return get_user_mock(user)
+    return await get_user_mongo(user)
 
 
-def verify_user(user: glob.ParsedUsername, password: str, scopes: list[str]) -> Optional[glob.User]:
+async def verify_user(user: glob.ParsedUsername, password: str, scopes: list[str]) -> Optional[glob.User]:
     """
         Verify the user and returns.
         If the user is valid, returns the user.
@@ -61,7 +94,7 @@ def verify_user(user: glob.ParsedUsername, password: str, scopes: list[str]) -> 
     """
 
     # Retrieve the user
-    ret_user = get_user(user)
+    ret_user = await get_user(user)
 
     # Check if it is valid
     if ret_user == None:

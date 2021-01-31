@@ -84,7 +84,7 @@ async def token_auth(form_data: OAuth2PasswordRequestForm = Depends()):
     u_parsed = util.parse_username(form_data.username)
 
     # Verify the user
-    u_verify = db.verify_user(u_parsed, form_data.password, form_data.scopes)
+    u_verify = await db.verify_user(u_parsed, form_data.password, form_data.scopes)
 
     # If not valid, reaise exception
     if u_verify == None:
