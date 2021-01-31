@@ -49,7 +49,7 @@ async def get_user_mongo(user: glob.ParsedUsername) -> Optional[glob.User]:
     # Find the user
     u = col.find_one(
         {
-            "username":user.username,
+            "username":user.username.lower(),
             "tag":user.tag
         }
     )
