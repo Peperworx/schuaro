@@ -44,8 +44,8 @@ async def get_current_user(token: str = Depends(oauth2_password_bearer)):
     g_user = db.get_user(
         glob.ParsedUsername(
             success = True,
-            username = user["username"],
-            tag = user["tag"]
+            username = user.username,
+            tag = user.tag
         )
     )
     return g_user

@@ -19,6 +19,7 @@ import re
 # Datetime stuff
 from datetime import timedelta, datetime
 import calendar
+import time
 
 
 
@@ -98,12 +99,16 @@ def generate_token(user,ttl:int=30,scopes:list['str']=[]) -> glob.Token:
 
 
 
-def decode_token(token:str):
+def decode_token(token:str) -> glob.TokenData:
     try:
-        dec = jwt.decode(
+        dec = glob.TokenData(**jwt.decode(
             token,
             config.settings.secret
-        )
+        ))
+        # Verify time
+        now = int(calendar.timegm(datetime.now().timetuple()))
+        if dec.expires < now:
+            return None
         return dec
     except:
         return None
