@@ -106,8 +106,8 @@ def decode_token(token:str) -> glob.TokenData:
             config.settings.secret
         ))
         # Verify time
-        now = int(calendar.timegm(datetime.now().timetuple()))
-        if dec.expires < now:
+        now = int(calendar.timegm(datetime.utcnow().timetuple()))
+        if now > dec.expires:
             return None
         return dec
     except:
