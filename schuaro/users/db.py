@@ -1,3 +1,4 @@
+from re import L
 from typing import Optional
 import hashlib
 from . import glob
@@ -6,6 +7,10 @@ from pymongo import MongoClient
 
 # Import utilities
 from . import util
+
+# Import permissions
+from . import permissions
+
 
 fake_db = [
     {
@@ -24,6 +29,9 @@ fake_db = [
         ]
     }
 ]
+
+
+
 
 
 
@@ -62,7 +70,16 @@ async def get_user_mongo(user: glob.ParsedUsername) -> Optional[glob.User]:
     return glob.User(**u)
     
 
+async def get_reserved_mongo() -> list[glob.ReservedReason]:
+    """
+        Returns a list of reserved prefixes and suffixes from mongodb.
+    """
 
+    db = await get_db()
+
+    col = db["schuaro-reserved"]
+
+    return [glob.ReservedReason(**c) for c in col.find()]
 
 async def get_user_mock(user: glob.ParsedUsername) -> Optional[glob.User]:
     """
@@ -85,6 +102,54 @@ async def get_user(user: glob.ParsedUsername) -> Optional[glob.User]:
     """
 
     return await get_user_mongo(user)
+
+
+async def create_user(
+    user: glob.ParsedUsername, 
+    password: str, 
+    permissions: list[str] = permissions.default_permissions
+    ) -> Optional[glob.UserCreateErrors]:
+    """
+        Created a user, excluding reserved prefixes and suffixes.
+    """
+
+    # Retrieve all reserved pre/suffixes
+    resed = await get_reserved_mongo()
+
+    # Check name
+    for res in resed:
+        # If it starts with, return error
+        if user.startswith(res):
+            return glob.UserCreateErrors.RESERVED_PREFIX
+        elif user.endsswith(res):
+            return glob.UserCreateErrors.RESERVED_SUFFIX
+        elif user == res:
+            return glob.UserCreateErrors.RESERVED_NAME
+    
+    # If we are here, we can go ahead and create
+    # Grab the db
+    db = await get_db()
+
+    # And the collection
+    col = db["schuaro-users"]
+
+    # Generate the user
+    u = {
+        "username":user.username.lower(),  # Lowercaseify username
+        "tag": user.tag,
+        "password":hashlib.sha256(password.encode()).hexdigest().lower(),
+        "active": True,
+        "public": True,
+        "permissions": permissions
+    }
+
+    # And add
+    insed = col.insert_one(
+        u
+    )
+
+    # Return no error
+    return glob.UserCreateErrors.NO_ERROR
 
 
 async def verify_user(user: glob.ParsedUsername, password: str, scopes: list[str]) -> Optional[glob.User]:

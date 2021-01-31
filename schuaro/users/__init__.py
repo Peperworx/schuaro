@@ -1,12 +1,14 @@
-from fastapi import Depends, HTTPException, status, Security
+from os import stat
+from fastapi import Depends, HTTPException, status, Security, Form, APIRouter, Response
 from fastapi.security import (
     OAuth2PasswordBearer, 
     OAuth2PasswordRequestForm, 
     SecurityScopes,
 )
 
+# Pydantic
 from pydantic import BaseModel
-from fastapi import APIRouter
+
 
 # Import library for permissions
 from . import permissions
@@ -88,6 +90,7 @@ async def token_auth(form_data: OAuth2PasswordRequestForm = Depends()):
 
     # If not valid, reaise exception
     if u_verify == None:
+        
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Unable to verify login credentials"
@@ -157,3 +160,70 @@ async def read_users_other(username:str, tag:str, current_user: glob.User = Secu
     # That others do not need to know. Ex: password
 
     return glob.UserPub(**dict(user))
+
+
+@router.post("/create")
+async def create_user(
+    response: Response,
+    username: str = Form(default=None),
+    password: str = Form(default=None)
+    ):
+    """
+        Creates a user with default permissions
+    """
+
+    # Validate the request. Nothing can be none
+    if username == None or password == None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Uh, you need to supply both a username AND a password"
+        )
+    
+    # Lets parse the username.
+    uname_parsed = util.parse_username(username)
+    
+    # If it failed, lets raise an error
+    if not uname_parsed.success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You must supply username and tag like so: username#tag where username is a string, and tag is a hexidecimal value."
+        )
+    
+
+    # Try to get the user. If we can, we are unable to create.
+    gu = await db.get_user(uname_parsed)
+    
+    if gu:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="That tag/username already exists! Choose a new tag"
+        )
+    
+    # If it all works, create the user
+    res = await db.create_user(
+        uname_parsed,
+        password
+    )
+
+    # Resolve Errors
+    if res == glob.UserCreateErrors.RESERVED_PREFIX:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Whoah there. Your username starts with a reserved prefix! Try something else"
+        )
+    elif res == glob.UserCreateErrors.RESERVED_SUFFIX:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Whoah there. Your username ends with a reserved suffix! Try something else"
+        )
+    elif res == glob.UserCreateErrors.RESERVED_NAME:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail = "Yeah, ummm. Sorry about this, but you are unable to use that username. Try somethign else. :/"
+        )
+    
+    response.status_code = status.HTTP_201_CREATED
+    return {
+        "success": True
+    }
+    
