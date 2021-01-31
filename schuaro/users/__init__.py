@@ -1,9 +1,9 @@
 from os import stat
-from fastapi import Depends, HTTPException, status, Security, Form, APIRouter, Response
+from fastapi import Depends, HTTPException, status, Security, Form, APIRouter, Response, Request
 from fastapi.security import (
     OAuth2PasswordBearer, 
     OAuth2PasswordRequestForm, 
-    SecurityScopes,
+    SecurityScopes
 )
 
 # Pydantic
@@ -77,10 +77,28 @@ async def get_current_user(
 @router.post(
     "/token",
     response_model=glob.Token)
-async def token_auth(form_data: OAuth2PasswordRequestForm = Depends()):
+async def token_auth(request: Request,form_data: OAuth2PasswordRequestForm = Depends()):
     """
         OAuth Password Bearer authentication. Returns a token.
     """
+    bdy = await request.body()
+    # Confirm clientID
+    client_validated = await db.validate_client(form_data.client_id,form_data.client_secret)
+    
+    # If unable to validate client, fail
+    if not client_validated:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid client"
+        )
+
+    # Check permissions
+    if "grant:user_defaults" not in client_validated.permissions or \
+        "create:user" not in client_validated.permissions:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Client does not have required permissions"
+        )
 
     # Parse out the username
     u_parsed = util.parse_username(form_data.username)
