@@ -88,7 +88,7 @@ def issue_token_pair(user: global_classes.UserDB, ttl: int = 30, scopes: list[st
 
     # Dictionary containing data for access token
     access_data = {
-        "type":"user",
+        "domain":"access",
         "username":user.username,
         "tag":user.tag,
         "expires": calendar.timegm(exp_time.timetuple()),
@@ -106,7 +106,7 @@ def issue_token_pair(user: global_classes.UserDB, ttl: int = 30, scopes: list[st
 
     # Dictionary containing data for refresh token
     refresh_data = {
-        "type":"user",
+        "domain":"refresh",
         "username": user.username,
         "tag":user.tag,
         "session_id":user.session_id,
@@ -120,14 +120,56 @@ def issue_token_pair(user: global_classes.UserDB, ttl: int = 30, scopes: list[st
         "HS256"
     )
 
+    # Validate the access token
+    access_token_valid = validate_access_token(global_classes.AccessToken(**access_data))
+
+    # If access token is not valid, fail
+    if not access_token_valid:
+        return None
+
     # Return
     return global_classes.TokenPair(
         access_token = access_token,
-        refresh_token=refresh_token
+        refresh_token=refresh_token,
+        token_type="bearer"
     )
 
 
-def decode_token(token:str) -> Optional[dict]:
+def validate_access_token(token: global_classes.AccessToken) -> bool:
+    """
+        Validates an access token
+    """
+
+    # Validate expiry
+    current_time = calendar.timegm(datetime.utcnow().timetuple())
+
+    # If expires > current time, fail
+    if token.expires > current_time:
+        
+        return False
+    
+    # Get user
+    user = get_user(token.username,token.tag)
+
+    # If the user does not exist, fail
+    if not user:
+        return False
+
+    # If the session_id does not match, fail
+    if token.session_id != user.session_id:
+        return False
+    
+    # Verify that the user has required scopes
+    for scope in token.scopes:
+        if scope not in user.permissions:
+            return False
+
+    # If all is good, return true
+    return True
+    
+
+
+def decode_access_token(token:str) -> global_classes.AccessToken:
     """
         Decodes a token, returning none if it fails
     """
@@ -139,7 +181,17 @@ def decode_token(token:str) -> Optional[dict]:
         )
     except JWTError:
         return None
-    return decoded
+    
+    # Verify decoded
+    tok = global_classes.AccessToken(
+        **decoded
+    )
+    
+    # Validate and fail if invalid
+    if validate_access_token(tok):
+        return tok
+    else:
+        return None
 
 
 def get_user(username: str, tag: int) -> Optional[global_classes.UserDB]:

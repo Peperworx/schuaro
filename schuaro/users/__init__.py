@@ -5,12 +5,14 @@ from fastapi import (
     Request,
     HTTPException,
     status,
-    Form
+    Form,
+    Security
 )
 
 # FastAPI Security stuff
 from fastapi.security import (
-    OAuth2PasswordBearer
+    OAuth2PasswordBearer,
+    SecurityScopes
 )
 
 from . import permissions
@@ -40,20 +42,32 @@ oauth2_scheme = OAuth2PasswordBearer(
 
 
 # Use this on top of oauth2_scheme
-async def current_user(token: str = Depends(oauth2_scheme)):
+async def current_user(security_scopes: SecurityScopes, token: str = Depends(oauth2_scheme)):
     """
         Retrieves the current user from a token.
     """
+    
+    # Prep exceptions
+    if security_scopes.scopes:
+        auth_value = f"Bearer scope={security_scopes.scope_str}"
+    else:
+        auth_value = f"Bearer"
+    
+    cred_ex = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="invalid_credentials",
+        headers={
+            "WWW-Authenticate":auth_value
+        }
+    )
 
+    
     # Decode the token
-    token_decoded = user_utils.decode_token(token)
+    token_decoded = user_utils.decode_access_token(token)
 
     # If it is none, fail
     if not token_decoded:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="incorrect_token"
-        )
+        raise cred_ex
     
     # If not, get the user
     user = user_utils.get_user(
@@ -63,12 +77,23 @@ async def current_user(token: str = Depends(oauth2_scheme)):
 
     # If none, fail
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="incorrect_token"
-        )
+        raise cred_ex
+    
+    # Verify that token has scopes
+    for scope in security_scopes.scopes:
+        if scope not in token_decoded.scopes:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="no_permissions",
+                headers={
+                    "WWW-Authenticate":auth_value
+                }
+            )
 
     # If successful, return
+    return user
+
+async def get_active_user(user=Security(current_user,scopes=["me"])):
     return user
 
 # Token route. OAuth token support
@@ -101,7 +126,7 @@ async def token_auth(
 
 # Basic test function that requires login
 @router.get("/")
-async def basic_test(curr_user: global_classes.UserDB = Depends(current_user)):
+async def basic_test(curr_user: global_classes.UserDB = Depends(get_active_user)):
     """
         Super simple function that requires login token
     """

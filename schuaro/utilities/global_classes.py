@@ -132,3 +132,41 @@ class TokenPair(BaseModel):
     """
     access_token: str
     refresh_token: str
+    token_type: str
+
+class AccessToken(BaseModel):
+    """
+        Represents an access token.
+    """
+
+    # Either the username of the user, or the clientid
+    username: str
+
+    # The tag of the user. Should be zero for clients
+    tag: int
+
+    # The expiry time
+    expires: int
+
+    # Scopes granted
+    scopes: list[str]
+
+    # Session id. Used to force logout of all tokens
+    session_id: int
+
+class RefreshToken(BaseModel):
+    """
+        Represents a refresh token
+    """
+
+    # Either the username of the user, or the clientid
+    username: str
+
+    # The tag of the user. Should be zero for clients
+    tag: int
+
+    # Scopes granted
+    scopes: list[str]
+
+    # Session id. Used to force logout of all tokens
+    session_id: int
