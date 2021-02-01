@@ -28,7 +28,7 @@ from datetime import datetime, time, timedelta
 
 from schuaro import utilities
 
-async def verify_user(username: str, password: str) -> global_classes.User:
+async def verify_user(username: str, password: str) -> global_classes.UserDB:
     """
         Verifies a user based on username and password.
         Used mainly for OAuth password authentication
@@ -75,10 +75,10 @@ async def verify_user(username: str, password: str) -> global_classes.User:
         return None
     
 
-    # Return the user, without sensitive information
-    return global_classes.User(**user.dict())
+    # Return the user
+    return user
 
-def issue_token_pair(user: global_classes.User, ttl: int = 30, scopes: list[str] = permissions.default_permissions) -> Optional[global_classes.TokenPair]:
+def issue_token_pair(user: global_classes.UserDB, ttl: int = 30, scopes: list[str] = permissions.default_permissions) -> Optional[global_classes.TokenPair]:
     """
         Issues an access/refresh token pair.
     """

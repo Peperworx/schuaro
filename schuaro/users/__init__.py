@@ -39,6 +39,37 @@ oauth2_scheme = OAuth2PasswordBearer(
 )
 
 
+# Use this on top of oauth2_scheme
+async def current_user(token: str = Depends(oauth2_scheme)):
+    """
+        Retrieves the current user from a token.
+    """
+
+    # Decode the token
+    token_decoded = user_utils.decode_token(token)
+
+    # If it is none, fail
+    if not token_decoded:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="incorrect_token"
+        )
+    
+    # If not, get the user
+    user = user_utils.get_user(
+        token_decoded["username"],
+        token_decoded["tag"]
+    )
+
+    # If none, fail
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="incorrect_token"
+        )
+
+    # If successful, return
+    return user
 
 # Token route. OAuth token support
 @router.post("/token")
@@ -70,10 +101,10 @@ async def token_auth(
 
 # Basic test function that requires login
 @router.get("/")
-async def basic_test(token = Depends(oauth2_scheme)):
+async def basic_test(curr_user: global_classes.UserDB = Depends(current_user)):
     """
         Super simple function that requires login token
     """
-    token_decoded = user_utils.decode_token(token)
-    print(token_decoded)
+
+    print(curr_user)
     return {"hello":"world"}
