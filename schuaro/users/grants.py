@@ -1,5 +1,6 @@
 from ..utilities import global_classes
 from ..clients import utils as client_utils
+from . import utils as user_utils
 from typing import Optional
 from fastapi import (
     Request,
@@ -29,6 +30,17 @@ async def password(token_request: global_classes.OAuthTokenRequest, request: Req
             }
         )
     
+
+    # Confirm that username and password are indeed valid
+    if not token_request.username or not token_request.password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="no_username_password",
+            headers={
+                "WWW-Authenticate": f"Bearer{f' scope={token_request.scope}' if len(scopes) > 0 else ''}"
+            }
+        )
+
     # Verify the client
     client_verify = await client_utils.verify_client(
         client_details.client_id,
@@ -64,7 +76,36 @@ async def password(token_request: global_classes.OAuthTokenRequest, request: Req
     # Yay!
 
     # Now lets validate the user, making sure they are able to login
+    user_validated = await user_utils.verify_user(token_request.username,token_request.password)
     
+    # If the user is not validated, fail
+    if not user_validated:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="incorrect_credentials",
+            headers={
+                "WWW-Authenticate": f"Bearer{f' scope={token_request.scope}' if len(scopes) > 0 else ''}"
+            }
+        )
+    
+
+    # Now we need to verify that the user has the permissions required for this scope
+    for scope in scopes:
+        # If the user is unable to accept this permission, fail
+        if scope not in user_validated.permissions:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="user_no_permissions",
+                headers={
+                    "WWW-Authenticate":
+                        f"Bearer{f' scope={token_request.scope}' if len(scopes) > 0 else ''}"
+                }
+            )
+
+    # Now we have confirmed that the user can, in fact, login with this scope, permissions, etc.
+
+    # Now lets issue a token pair.
+    tokens
 
     return {}
 

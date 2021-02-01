@@ -54,10 +54,68 @@ class ClientAuthentication(BaseModel):
     client_secret: str
 
 class ClientDB(BaseModel):
+    """
+        Represents a client in the database
+    """
+
+    # The client ID
     client_id: str
+
+    # The client secret
     client_secret: str
+
+    # The client's permissions
     permissions: list[str]
 
 class Client(BaseModel):
+    """
+        Represents a client oustide of the database
+    """
+
+    # The client ID
     client_id: str
+
+    # The client's permissions
+    permissions: list[str]
+
+class UserDB(BaseModel):
+    """
+        Represents a user in the database
+    """
+
+    # The username
+    username: str
+
+    # The tag
+    tag: int
+
+    # SHA 256 hash of the password
+    password: str
+
+    # If the user is active
+    active: bool
+
+    # If the user is public
+    public: bool
+
+    # The user's permissions
+    # These are just scopes that the user can be assigned in a token.
+    permissions: list[str]
+
+class User(BaseModel):
+    """
+        Represents a user outside of the database
+    """
+    
+    # The username
+    username: str
+
+    # The tag
+    tag: int
+
+    # If the user is public
+    public: bool
+
+    # The user's permissions
+    # These are just scopes that the user can be assigned in a token.
     permissions: list[str]
