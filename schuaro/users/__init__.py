@@ -24,6 +24,10 @@ from ..utilities import global_classes as global_classes
 # Grants
 from . import grants
 
+# User utilities
+from . import utils as user_utils
+
+
 # Get the router ready
 router = APIRouter(prefix="/users")
 
@@ -70,5 +74,6 @@ async def basic_test(token = Depends(oauth2_scheme)):
     """
         Super simple function that requires login token
     """
-    print(token)
+    token_decoded = user_utils.decode_token(token)
+    print(token_decoded)
     return {"hello":"world"}
