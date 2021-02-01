@@ -86,50 +86,39 @@ def issue_token_pair(user: global_classes.User, ttl: int = 30, scopes: list[str]
     # Expires time
     exp_time = datetime.utcnow()+timedelta(minutes=ttl)
 
-    # The user has a randomly generated "session id"
-    # The session id is included in the token, and if it does not match on 
-    # The user's database entry, it will be discarded.
-    # In this case, we will be updating the user's session id
-    
-    # Grab the database
-    db = database.get_db()
-
-    # Grab the collection
-    col = db["schuaro-users"]
-
-    # Generate the session id
-    session_id = secrets.randbits(256)
-
-    # Find and update the user
-    found = col.find_one_and_update(
-        {
-            "username":user.username,
-            "tag":user.tag
-        },
-        {
-            "session_id":session_id
-        }
-    )
-
-    # If it was not found, fail
-    if not found:
-        return None
-
-
-
     # Dictionary containing data for access token
     access_data = {
         "username":user.username,
         "expires": calendar.timegm(exp_time.timetuple()),
-        "scopes":scopes
+        "scopes":scopes,
+        "session_id":user.session_id
     }
     
     
     # Encode it
-    access_key = jwt.encode(
+    access_token = jwt.encode(
         access_data,
         config.settings.secret,
         "HS256"
     )
-    return {}
+
+    # Dictionary containing data for refresh token
+    refresh_data = {
+        "username": user.username,
+        "session_id":user.session_id,
+        "scopes": scopes
+    }
+
+    # Encode it
+    refresh_token = jwt.encode(
+        refresh_data,
+        config.settings.secret,
+        "HS256"
+    )
+
+    # Return
+    return global_classes.TokenPair(
+        access_token = access_token,
+        refresh_token=refresh_token
+    )
     

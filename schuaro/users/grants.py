@@ -13,7 +13,7 @@ from fastapi import (
 
 
 
-async def password(token_request: global_classes.OAuthTokenRequest, request: Request):
+async def password(token_request: global_classes.OAuthTokenRequest, request: Request) -> global_classes.TokenPair:
     # Retrieve details of the client
     client_details = await client_utils.extract_client(token_request,request)
 
@@ -109,9 +109,9 @@ async def password(token_request: global_classes.OAuthTokenRequest, request: Req
         user_validated,
         scopes=scopes
     )
-    print(tokens)
-
-    return {}
+    
+    # And return the tokens
+    return tokens
 
 async def authorization_code(token_request: global_classes.OAuthTokenRequest, request: Request):
     return {}
