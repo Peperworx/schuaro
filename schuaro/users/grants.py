@@ -109,6 +109,7 @@ async def password(token_request: global_classes.OAuthTokenRequest, request: Req
         user_validated,
         scopes=scopes
     )
+    print(tokens)
 
     return {}
 

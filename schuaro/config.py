@@ -6,8 +6,6 @@ class Settings(BaseSettings):
     mongo_host: str
     mongo_port: int
     db_name: str
-    access_token_key: dict = {}
-    refresh_token_key: dict = {}
 
     class Config:
         env_file = ".env"
