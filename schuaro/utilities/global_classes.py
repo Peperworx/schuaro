@@ -1,8 +1,18 @@
+"""
+    This file consists of global dataclasses and enums for schuaro/
+"""
+
 from pydantic import BaseModel
 from typing import Optional
+from . import as_form
 
+@as_form
+class OAuthTokenRequest(BaseModel):
+    """
+        Completely epic class for handling all possibilities of a oauth token request.
+        This is for handling unparsed data, and should be parsed into a separate class later.
+    """
 
-class OAuthTokenRequest:
     grant_type: str # Grant Type
     # Other stuff. All Are optional.
     
@@ -30,3 +40,14 @@ class OAuthTokenRequest:
     # Other applications should use a authorization code grant that is passed through our internal login.
     username: Optional[str] # Username for password grant
     password: Optional[str] # Password for password grant
+
+class ClientAuthentication(BaseModel):
+    """
+        Represents a client when making authentication requests
+    """
+
+    # The client id
+    client_id: str
+
+    # The client secret
+    client_secret: str
