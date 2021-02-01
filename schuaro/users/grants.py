@@ -41,11 +41,30 @@ async def password(token_request: global_classes.OAuthTokenRequest, request: Req
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="client_no_exist",
             headers={
-                "WWW-Authenticate": f"Bearer{f' scope={token_request.scope}' if len(scopes) > 0 else ''}"
+                "WWW-Authenticate":
+                    f"Bearer{f' scope={token_request.scope}' if len(scopes) > 0 else ''}"
             }
         )
     
-    # Now we have validated the client, next is user
+    # Now we need to examine the scope, and make sure that the client is capable
+    # of issuing these permissions
+    for scope in scopes:
+        # If the client is unable to issue this permission, fail
+        if f"issue:{scope}" not in client_verify.permissions:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="client_no_permissions",
+                headers={
+                    "WWW-Authenticate":
+                        f"Bearer{f' scope={token_request.scope}' if len(scopes) > 0 else ''}"
+                }
+            )
+    
+    # If we have actually reached this point, the client is valid for performing this operation.
+    # Yay!
+
+    # Now lets validate the user, making sure they are able to login
+    
 
     return {}
 

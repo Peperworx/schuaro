@@ -29,7 +29,10 @@ router = APIRouter(prefix="/users")
 
 # Password bearer
 # We use this for the sake of swagger
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{router.prefix}{'/' if not router.prefix.endswith('/') else ''}token")
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl=f"{router.prefix}{'/' if not router.prefix.endswith('/') else ''}token",
+    scopes=permissions.scopes
+)
 
 
 
