@@ -41,5 +41,3 @@ scopes_clients = {
 
 # Just allow default issue all for now.
 default_clients = issue_clients.keys()
-
-print(default_clients)

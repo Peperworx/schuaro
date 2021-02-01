@@ -46,15 +46,15 @@ async def token_auth(
 
     # Basic password grant
     if grant_type == "password":
-        return grants.password(token_request,request)
+        return await grants.password(token_request,request)
     elif grant_type == "authorization_code":
-        return grants.authorization_code(token_request,request)
+        return await grants.authorization_code(token_request,request)
     elif grant_type == "client_credentials":
-        return grants.client_credentials(token_request,request)
+        return await grants.client_credentials(token_request,request)
     elif grant_type == "refresh_token":
-        return grants.refresh_token(token_request,request)
+        return await grants.refresh_token(token_request,request)
     elif grant_type == "urn:ietf:params:oauth:grant-type:device_code":
-        return grants.device_code(token_request,request)
+        return await grants.device_code(token_request,request)
     else:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

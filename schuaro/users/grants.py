@@ -12,9 +12,9 @@ from fastapi import (
 
 
 
-def password(token_request: global_classes.OAuthTokenRequest, request: Request):
+async def password(token_request: global_classes.OAuthTokenRequest, request: Request):
     # Retrieve details of the client
-    client_details = client_utils.extract_client(token_request,request)
+    client_details = await client_utils.extract_client(token_request,request)
 
     # Retrive scope details
     scopes = token_request.scope.split() if token_request.scope else []
@@ -29,18 +29,34 @@ def password(token_request: global_classes.OAuthTokenRequest, request: Request):
             }
         )
     
+    # Verify the client
+    client_verify = await client_utils.verify_client(
+        client_details.client_id,
+        client_details.client_secret
+    )
+
+    # If it is none, fail
+    if not client_verify:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="client_no_exist",
+            headers={
+                "WWW-Authenticate": f"Bearer{f' scope={token_request.scope}' if len(scopes) > 0 else ''}"
+            }
+        )
     
-    
+    # Now we have validated the client, next is user
+
     return {}
 
-def authorization_code(token_request: global_classes.OAuthTokenRequest, request: Request):
+async def authorization_code(token_request: global_classes.OAuthTokenRequest, request: Request):
     return {}
 
-def client_credentials(token_request: global_classes.OAuthTokenRequest, request: Request):
+async def client_credentials(token_request: global_classes.OAuthTokenRequest, request: Request):
     return {}
 
-def refresh_token(token_request: global_classes.OAuthTokenRequest, request: Request):
+async def refresh_token(token_request: global_classes.OAuthTokenRequest, request: Request):
     return {}
 
-def device_code(token_request: global_classes.OAuthTokenRequest, request: Request):
+async def device_code(token_request: global_classes.OAuthTokenRequest, request: Request):
     return {}

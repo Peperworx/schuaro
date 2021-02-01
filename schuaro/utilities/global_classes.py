@@ -2,6 +2,7 @@
     This file consists of global dataclasses and enums for schuaro/
 """
 
+from schuaro.users import permissions
 from pydantic import BaseModel
 from typing import Optional
 from . import as_form
@@ -51,3 +52,12 @@ class ClientAuthentication(BaseModel):
 
     # The client secret
     client_secret: str
+
+class ClientDB(BaseModel):
+    client_id: str
+    client_secret: str
+    permissions: list[str]
+
+class Client(BaseModel):
+    client_id: str
+    permissions: list[str]
