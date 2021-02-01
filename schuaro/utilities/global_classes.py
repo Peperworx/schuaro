@@ -119,3 +119,10 @@ class User(BaseModel):
     # The user's permissions
     # These are just scopes that the user can be assigned in a token.
     permissions: list[str]
+
+class TokenPair(BaseModel):
+    """
+        Represents a access-refresh token pain
+    """
+    access_token: str
+    refresh_token: str

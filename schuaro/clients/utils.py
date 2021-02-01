@@ -27,9 +27,6 @@ async def extract_client(
         and a request. Will return None if the client was not provided
     """
 
-    # Whether or not we found the details
-    found: bool = False
-
     # Check for client id and secret in token_request
     # They will be none if not provided
     client_id = token_request.client_id
@@ -48,7 +45,6 @@ async def extract_client(
     
     # If it exists, we will have reached this point
     # Lets create the return structure and return
-    print(client_id)
     return global_classes.ClientAuthentication(
         client_id=client_id,
         client_secret=client_secret
