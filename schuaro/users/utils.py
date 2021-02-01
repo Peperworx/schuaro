@@ -13,6 +13,10 @@ import hashlib
 # Jose for JWT
 from jose import jwt
 
+# Calendar and datetime for time stuff
+import calendar
+from datetime import datetime, time, timedelta
+
 async def verify_user(username: str, password: str) -> global_classes.User:
     """
         Verifies a user based on username and password.
@@ -67,4 +71,12 @@ def issue_token_pair(user: global_classes.User, ttl: int = 30, scopes: list[str]
     """
         Issues an access/refresh token pair.
     """
-    ...
+
+    # Expires time
+    exp_time = datetime.utcnow()+timedelta(minutes=ttl)
+
+    # Dictionary containing data for access token
+    access_data = {
+        "username":user.username,
+        "expires": calendar.timegm(exp_time.timetuple())
+    }

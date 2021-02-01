@@ -105,7 +105,10 @@ async def password(token_request: global_classes.OAuthTokenRequest, request: Req
     # Now we have confirmed that the user can, in fact, login with this scope, permissions, etc.
 
     # Now lets issue a token pair.
-    tokens
+    tokens = user_utils.issue_token_pair(
+        user_validated,
+        scopes=scopes
+    )
 
     return {}
 
