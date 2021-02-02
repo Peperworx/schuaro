@@ -274,3 +274,41 @@ async def decode_authcode(token:str) -> Optional[global_classes.AuthCode]:
         return tok
     else:
         return None
+
+async def issue_authcode(
+    user: global_classes.UserDB,
+    login_request: global_classes.LoginRequest,
+    ttl: int = 30,
+    scopes: list[str] = permissions.default_permissions
+    ) -> Optional[str]:
+    """
+        Issues an authorization code for using authcode login
+    """
+    expiry = datetime.utcnow()+timedelta(minutes=ttl)
+
+    # Create data
+    authcode_data = global_classes.AuthCode(
+        username=user.username,
+        tag=user.tag,
+        scopes=scopes,
+        expires = calendar.timegm(expiry.timetuple()),
+        session_id=user.session_id,
+        redirect_uri=login_request.redirect_uri
+    )
+
+    # Validate
+    validated = await validate_authcode(authcode_data)
+
+    # If not validated, fail
+    if not validated:
+        return None
+
+    # Encode authcode
+    authcode = jwt.encode(
+        authcode_data.dict(),
+        config.settings.secret,
+        "HS256"
+    )
+
+    # Return
+    return authcode

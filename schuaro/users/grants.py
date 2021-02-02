@@ -7,9 +7,9 @@ from fastapi import (
     status,
     HTTPException
 )
-
+from fastapi.responses import RedirectResponse
 import hashlib
-
+import urllib.parse
 
 
 async def password(token_request: global_classes.OAuthTokenRequest, request: Request) -> global_classes.TokenResponse:
@@ -275,7 +275,7 @@ async def device_code(token_request: global_classes.OAuthTokenRequest, request: 
 
 async def login(login_request: global_classes.LoginRequest):
     # Get the database
-    db = database.get_db()
+    db = await database.get_db()
 
     # Get the collections
     col_clients = db["schuaro-clients"]
@@ -338,7 +338,7 @@ async def login(login_request: global_classes.LoginRequest):
         ) 
     
     # Get the user
-    user = user_utils.get_user(uname,tag)
+    user = await user_utils.get_user(uname,tag)
 
     # Check user exists
     if not user:
@@ -376,15 +376,35 @@ async def login(login_request: global_classes.LoginRequest):
                 }
             )
     
-    # Create expiry
-    expiry = 0
+    # Time To live
+    ttl = 30
 
-    # If we are here, lets issue an authorization token
-    authcode = global_classes.AuthCode(
-        user=user.username,
-        tag=user.tag,
-        scopes=scopes,
-        expires = expiry,
-        session_id=user.session_id,
-        redirect_uri=login_request.redirect_uri
+    # Generate authcode
+    authcode = await user_utils.issue_authcode(
+        user,
+        login_request,
+        ttl=ttl,
+        scopes=scopes
     )
+
+    # If it failed, fail
+    if not authcode:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="authcode_gen_error",
+            headers={
+                "WWW-Authenticate":
+                    f"Bearer{f' scope={login_request.scope}' if len(scopes) > 0 else ''}"
+            }
+        )
+
+    # If not, generate url
+    get_data = {
+        "state":login_request.state,
+        "code":authcode
+    }
+    
+    # generate url
+    redirect_url = f"{login_request.redirect_uri}?{urllib.parse.urlencode(get_data)}"
+
+    return redirect_url

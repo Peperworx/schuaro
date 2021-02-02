@@ -6,7 +6,8 @@ from fastapi import (
     HTTPException,
     status,
     Form,
-    Security
+    Security,
+    Response
 )
 
 # FastAPI Security stuff
@@ -15,6 +16,7 @@ from fastapi.security import (
     SecurityScopes,
     OAuth2AuthorizationCodeBearer
 )
+
 
 from . import permissions
 
@@ -136,7 +138,9 @@ async def get_self(user: global_classes.UserDB = Security(current_user,scopes=["
 
 @router.post("/login")
 async def login(
+    response: Response,
     login_request: global_classes.LoginRequest = Depends(global_classes.LoginRequest.as_form)
+    
 ):
     """
         This is for token login authentication.
@@ -145,4 +149,7 @@ async def login(
 
     ret = await grants.login(login_request)
 
-    return ret
+    response.status_code = status.HTTP_303_SEE_OTHER
+    response.headers["Location"] = ret
+    return {}
+    
