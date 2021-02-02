@@ -2,7 +2,7 @@ from .utilities import global_classes
 from .config import settings
 import pymongo
 
-def get_db():
+async def get_db():
     """
         Retrieves a pymongo database instance based off of current configuration data.
     """

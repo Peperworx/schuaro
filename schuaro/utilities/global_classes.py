@@ -211,3 +211,27 @@ class TokenResponse(BaseModel):
 
     # The refresh token
     refresh_token: str 
+
+@as_form
+class LoginRequest(BaseModel):
+    """
+        Model of a login request
+    """
+
+    # The username
+    username: str
+
+    # The password
+    password: str
+
+    # The redirect uri
+    redirect_uri: str
+
+    # The client id
+    client_id: str
+
+    # The scope
+    scope: str = ""
+
+    # The state
+    state: str = ""

@@ -45,7 +45,7 @@ async def verify_user(username: str, password: str) -> global_classes.UserDB:
         return None
     
     # Get the db
-    db = database.get_db()
+    db = await database.get_db()
 
 
     # Grab the users collection
@@ -80,7 +80,7 @@ async def verify_user(username: str, password: str) -> global_classes.UserDB:
     # Return the user
     return user
 
-def issue_token_pair(user: global_classes.UserDB, ttl: int = 30, scopes: list[str] = permissions.default_permissions) -> Optional[global_classes.TokenPair]:
+async def issue_token_pair(user: global_classes.UserDB, ttl: int = 30, scopes: list[str] = permissions.default_permissions) -> Optional[global_classes.TokenPair]:
     """
         Issues an access/refresh token pair.
     """
@@ -123,7 +123,7 @@ def issue_token_pair(user: global_classes.UserDB, ttl: int = 30, scopes: list[st
     )
 
     # Validate the access token
-    access_token_valid = validate_access_token(global_classes.AccessToken(**access_data))
+    access_token_valid = await validate_access_token(global_classes.AccessToken(**access_data))
 
     # If access token is not valid, fail
     if not access_token_valid:
@@ -137,7 +137,7 @@ def issue_token_pair(user: global_classes.UserDB, ttl: int = 30, scopes: list[st
     )
 
 
-def validate_access_token(token: global_classes.AccessToken) -> bool:
+async def validate_access_token(token: global_classes.AccessToken) -> bool:
     """
         Validates an access token
     """
@@ -150,7 +150,7 @@ def validate_access_token(token: global_classes.AccessToken) -> bool:
         return False
     
     # Get user
-    user = get_user(token.username,token.tag)
+    user = await get_user(token.username,token.tag)
 
     # If the user does not exist, fail
     if not user:
@@ -169,7 +169,7 @@ def validate_access_token(token: global_classes.AccessToken) -> bool:
     return True
     
 
-def decode_access_token(token:str) -> Optional[global_classes.AccessToken]:
+async def decode_access_token(token:str) -> Optional[global_classes.AccessToken]:
     """
         Decodes a token, returning none if it fails
     """
@@ -188,19 +188,19 @@ def decode_access_token(token:str) -> Optional[global_classes.AccessToken]:
     )
     
     # Validate and fail if invalid
-    if validate_access_token(tok):
+    if await validate_access_token(tok):
         return tok
     else:
         return None
 
 
-def get_user(username: str, tag: int) -> Optional[global_classes.UserDB]:
+async def get_user(username: str, tag: int) -> Optional[global_classes.UserDB]:
     """
         Returns a user with username and tag
     """
 
     # Retrive the database and the collection
-    db = database.get_db()
+    db = await database.get_db()
     col = db["schuaro-users"]
 
     # Get the user
@@ -220,7 +220,7 @@ def get_user(username: str, tag: int) -> Optional[global_classes.UserDB]:
         **user
     )
 
-def validate_authcode(token: global_classes.AuthCode) -> bool:
+async def validate_authcode(token: global_classes.AuthCode) -> bool:
     """
         Validates an authcode.
     """
@@ -233,7 +233,7 @@ def validate_authcode(token: global_classes.AuthCode) -> bool:
         return False
     
     # Get user
-    user = get_user(token.username,token.tag)
+    user = await get_user(token.username,token.tag)
 
     # If the user does not exist, fail
     if not user:
@@ -251,7 +251,7 @@ def validate_authcode(token: global_classes.AuthCode) -> bool:
     # If all is good, return true
     return True
 
-def decode_authcode(token:str) -> Optional[global_classes.AuthCode]:
+async def decode_authcode(token:str) -> Optional[global_classes.AuthCode]:
     """
         Decodes an authcode, returning none if fails
     """
@@ -270,7 +270,7 @@ def decode_authcode(token:str) -> Optional[global_classes.AuthCode]:
     )
     
     # Validate and fail if invalid
-    if validate_authcode(tok):
+    if await validate_authcode(tok):
         return tok
     else:
         return None

@@ -18,9 +18,6 @@ from fastapi.security import (
 
 from . import permissions
 
-# Pydantic
-from pydantic import BaseModel
-
 # Global data
 from ..utilities import global_classes as global_classes
 
@@ -135,3 +132,17 @@ async def get_self(user: global_classes.UserDB = Security(current_user,scopes=["
         Returns user info
     """
     return global_classes.User(**dict(user))
+
+
+@router.post("/login")
+async def login(
+    login_request: global_classes.LoginRequest = Depends(global_classes.LoginRequest.as_form)
+):
+    """
+        This is for token login authentication.
+    """
+    
+
+    ret = await grants.login(login_request)
+
+    return ret
