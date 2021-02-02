@@ -32,7 +32,7 @@ async def login(login_request: global_classes.LoginRequest):
     })
 
     # Verify our client
-    if not client:
+    if not our_client:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="client_no_exist",
@@ -43,7 +43,7 @@ async def login(login_request: global_classes.LoginRequest):
         )
     
     # Verify our client_secret
-    if our_client["client_secret"] != config.settings.authcode_clientsecret:
+    if our_client["client_secret"].lower() != hashlib.sha256(config.settings.authcode_clientsecret.encode()).hexdigest().lower():
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="client_no_password",
