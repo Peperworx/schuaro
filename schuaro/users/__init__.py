@@ -29,6 +29,8 @@ from . import grants
 # User utilities
 from . import utils as user_utils
 
+# Authcode stuff
+from . import authcode
 
 # Get the router ready
 router = APIRouter(prefix="/users")
@@ -143,11 +145,11 @@ async def login(
     
 ):
     """
-        This is for token login authentication.
+        This is for token login authentication. Super basic authcode issueing
     """
     
 
-    ret = await grants.login(login_request)
+    ret = await authcode.login(login_request)
 
     response.status_code = status.HTTP_303_SEE_OTHER
     response.headers["Location"] = ret
