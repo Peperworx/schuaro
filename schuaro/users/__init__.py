@@ -12,7 +12,8 @@ from fastapi import (
 # FastAPI Security stuff
 from fastapi.security import (
     OAuth2PasswordBearer,
-    SecurityScopes
+    SecurityScopes,
+    OAuth2AuthorizationCodeBearer
 )
 
 from . import permissions
@@ -39,10 +40,14 @@ oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl=f"{router.prefix}{'/' if not router.prefix.endswith('/') else ''}token",
     scopes=permissions.scopes
 )
-
+oauth2_authcode = OAuth2AuthorizationCodeBearer(
+    authorizationUrl=f"/login",
+    tokenUrl=f"{router.prefix}{'/' if not router.prefix.endswith('/') else ''}token",
+    scopes=permissions.scopes
+)
 
 # Use this on top of oauth2_scheme
-async def current_user(security_scopes: SecurityScopes, token: str = Depends(oauth2_scheme)):
+async def current_user(security_scopes: SecurityScopes, token: str = Depends(oauth2_authcode)):
     """
         Retrieves the current user from a token.
     """
