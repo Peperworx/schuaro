@@ -1,9 +1,7 @@
 """
-    This file consists of global dataclasses and enums for schuaro/
+    This file consists of global dataclasses and enums for schuaro
 """
 
-from schuaro.users.grants import refresh_token
-from schuaro.users import permissions
 from pydantic import BaseModel
 from typing import Optional
 from . import as_form
@@ -213,4 +211,3 @@ class TokenResponse(BaseModel):
 
     # The refresh token
     refresh_token: str 
-    
