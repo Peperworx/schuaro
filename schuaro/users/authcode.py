@@ -152,7 +152,7 @@ async def login(login_request: global_classes.LoginRequest):
         if scope not in user.permissions:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="client_no_permissions",
+                detail="user_no_permissions",
                 headers={
                     "WWW-Authenticate":
                         f"Bearer{f' scope={login_request.scope}' if len(scopes) > 0 else ''}"
