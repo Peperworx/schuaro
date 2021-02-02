@@ -60,7 +60,7 @@ async def verify_client(client_id: str, client_secret: str):
     """
     
     # Get the db
-    db = database.get_db()
+    db = await database.get_db()
 
 
     # Grab the clients collection

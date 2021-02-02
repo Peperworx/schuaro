@@ -67,14 +67,14 @@ async def current_user(security_scopes: SecurityScopes, token: str = Depends(oau
 
     
     # Decode the token
-    token_decoded = user_utils.decode_access_token(token)
+    token_decoded = await user_utils.decode_access_token(token)
 
     # If it is none, fail
     if not token_decoded:
         raise cred_ex
     
     # If not, get the user
-    user = user_utils.get_user(
+    user = await user_utils.get_user(
         token_decoded.username,
         token_decoded.tag
     )
@@ -152,4 +152,3 @@ async def login(
     response.status_code = status.HTTP_303_SEE_OTHER
     response.headers["Location"] = ret
     return {}
-    

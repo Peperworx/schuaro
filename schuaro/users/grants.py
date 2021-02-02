@@ -212,7 +212,7 @@ async def authorization_code(token_request: global_classes.OAuthTokenRequest, re
     
 
     # Decode the authcode
-    authcode = user_utils.decode_authcode(token_request.code)
+    authcode = await user_utils.decode_authcode(token_request.code)
 
     # Check if authcode is valid, failing if not
     if not authcode:
@@ -243,8 +243,8 @@ async def authorization_code(token_request: global_classes.OAuthTokenRequest, re
     ttl = 30
 
     # Lets issue a token
-    issued_tokens = user_utils.issue_token_pair(
-        user_utils.get_user(
+    issued_tokens = await user_utils.issue_token_pair(
+        await user_utils.get_user(
             authcode.username,
             authcode.tag
         ),
