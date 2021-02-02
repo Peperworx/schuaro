@@ -96,7 +96,7 @@ async def current_user(security_scopes: SecurityScopes, token: str = Depends(oau
 
 # Token route. OAuth token support
 @router.post("/token", response_model=global_classes.TokenPair)
-async def token_auth(
+async def token_authentication(
     token_request: global_classes.OAuthTokenRequest = Depends(global_classes.OAuthTokenRequest.as_form), # This one took a lot of googling.
     request: Request = None):
     """
@@ -124,8 +124,8 @@ async def token_auth(
     return {}
 
 # Route for returning user info
-@router.get("/me", response_model=global_classes.User)
-async def basic_test(user: global_classes.UserDB = Security(current_user,scopes=["me"])):
+@router.get("/self", response_model=global_classes.User)
+async def get_self(user: global_classes.UserDB = Security(current_user,scopes=["me"])):
     """
         Returns user info
     """

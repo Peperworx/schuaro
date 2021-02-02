@@ -2,6 +2,7 @@
     This file consists of global dataclasses and enums for schuaro/
 """
 
+from schuaro.users.grants import refresh_token
 from schuaro.users import permissions
 from pydantic import BaseModel
 from typing import Optional
@@ -167,3 +168,49 @@ class RefreshToken(BaseModel):
 
     # Session id. Used to force logout of all tokens
     session_id: int
+
+class AuthCode(BaseModel):
+    """
+        Represents an OAuth2 authorization code
+    """
+
+    # Username of the issued user
+    username: str
+
+    # Tag of the issued user
+    tag: int
+
+    # Scopes that this authorization code can grant
+    scopes: list[str]
+
+    # The expiry time
+    expires: int
+
+    # The sessionid of the user
+    # This is almost a salt, changing when the user resets their password,
+    # asks to, or locks their account.
+    session_id: int
+
+    # The redirect_uri of the authcode
+    redirect_uri: str
+
+class TokenResponse(BaseModel):
+    """
+        Models a token response for a token endpoint
+    """
+
+    # The type of token
+    token_type: str
+
+    # The number of seconds that it will expire in
+    expires_in: int
+
+    # The access token
+    access_token: str
+    
+    # The scope
+    scope: str 
+
+    # The refresh token
+    refresh_token: str 
+    

@@ -127,10 +127,7 @@ def issue_token_pair(user: global_classes.UserDB, ttl: int = 30, scopes: list[st
 
     # If access token is not valid, fail
     if not access_token_valid:
-        raise HTTPException(
-            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="server_error_token_gen"
-        )
+        return None
 
     # Return
     return global_classes.TokenPair(
@@ -148,7 +145,7 @@ def validate_access_token(token: global_classes.AccessToken) -> bool:
     # Validate expiry
     current_time = calendar.timegm(datetime.utcnow().timetuple())
 
-    # If expires > current time, fail
+    # If expires < current time, fail
     if token.expires < current_time:
         return False
     
@@ -172,8 +169,7 @@ def validate_access_token(token: global_classes.AccessToken) -> bool:
     return True
     
 
-
-def decode_access_token(token:str) -> global_classes.AccessToken:
+def decode_access_token(token:str) -> Optional[global_classes.AccessToken]:
     """
         Decodes a token, returning none if it fails
     """
@@ -223,3 +219,58 @@ def get_user(username: str, tag: int) -> Optional[global_classes.UserDB]:
     return global_classes.UserDB(
         **user
     )
+
+def validate_authcode(token: global_classes.AuthCode) -> bool:
+    """
+        Validates an authcode.
+    """
+
+    # Validate expiry
+    current_time = calendar.timegm(datetime.utcnow().timetuple())
+
+    # If expires > current time, fail
+    if token.expires < current_time:
+        return False
+    
+    # Get user
+    user = get_user(token.username,token.tag)
+
+    # If the user does not exist, fail
+    if not user:
+        return False
+
+    # If the session_id does not match, fail
+    if token.session_id != user.session_id:
+        return False
+    
+    # Verify that the user has required scopes
+    for scope in token.scopes:
+        if scope not in user.permissions:
+            return False
+
+    # If all is good, return true
+    return True
+
+def decode_authcode(token:str) -> Optional[global_classes.AuthCode]:
+    """
+        Decodes an authcode, returning none if fails
+    """
+    try:
+        decoded = jwt.decode(
+            token,
+            config.settings.secret,
+            "HS256"
+        )
+    except JWTError:
+        return None
+    
+    # Verify decoded
+    tok = global_classes.AuthCode(
+        **decoded
+    )
+    
+    # Validate and fail if invalid
+    if validate_authcode(tok):
+        return tok
+    else:
+        return None
