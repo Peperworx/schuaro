@@ -1,4 +1,5 @@
 # Retrieve the global_classes from utilities
+from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 from ..utilities import global_classes
 
 # Optional types
@@ -26,7 +27,8 @@ import secrets
 import calendar
 from datetime import datetime, time, timedelta
 
-from schuaro import utilities
+# Http error
+from fastapi import HTTPException, status
 
 async def verify_user(username: str, password: str) -> global_classes.UserDB:
     """
@@ -125,7 +127,10 @@ def issue_token_pair(user: global_classes.UserDB, ttl: int = 30, scopes: list[st
 
     # If access token is not valid, fail
     if not access_token_valid:
-        return None
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="server_error_token_gen"
+        )
 
     # Return
     return global_classes.TokenPair(
@@ -144,8 +149,7 @@ def validate_access_token(token: global_classes.AccessToken) -> bool:
     current_time = calendar.timegm(datetime.utcnow().timetuple())
 
     # If expires > current time, fail
-    if token.expires > current_time:
-        
+    if token.expires < current_time:
         return False
     
     # Get user

@@ -119,9 +119,6 @@ class User(BaseModel):
     # If the user is public
     public: bool
 
-    # Session ID for the user. Allows invalidation of tokens
-    session_id: int
-
     # The user's permissions
     # These are just scopes that the user can be assigned in a token.
     permissions: list[str]

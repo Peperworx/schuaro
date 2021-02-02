@@ -71,8 +71,8 @@ async def current_user(security_scopes: SecurityScopes, token: str = Depends(oau
     
     # If not, get the user
     user = user_utils.get_user(
-        token_decoded["username"],
-        token_decoded["tag"]
+        token_decoded.username,
+        token_decoded.tag
     )
 
     # If none, fail
@@ -93,11 +93,9 @@ async def current_user(security_scopes: SecurityScopes, token: str = Depends(oau
     # If successful, return
     return user
 
-async def get_active_user(user=Security(current_user,scopes=["me"])):
-    return user
 
 # Token route. OAuth token support
-@router.post("/token")
+@router.post("/token", response_model=global_classes.TokenPair)
 async def token_auth(
     token_request: global_classes.OAuthTokenRequest = Depends(global_classes.OAuthTokenRequest.as_form), # This one took a lot of googling.
     request: Request = None):
@@ -123,13 +121,12 @@ async def token_auth(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="unexpected_grant_type"
         )
+    return {}
 
-# Basic test function that requires login
-@router.get("/")
-async def basic_test(curr_user: global_classes.UserDB = Depends(get_active_user)):
+# Route for returning user info
+@router.get("/me", response_model=global_classes.User)
+async def basic_test(user: global_classes.UserDB = Security(current_user,scopes=["me"])):
     """
-        Super simple function that requires login token
+        Returns user info
     """
-
-    print(curr_user)
-    return {"hello":"world"}
+    return global_classes.User(**dict(user))
