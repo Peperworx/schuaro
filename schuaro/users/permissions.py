@@ -7,7 +7,8 @@ scopes = {
     "ability:chat":"The ability to chat with others. Can be muted.",
     "ability:issue_client":"The ability to issue clients",
     "ability:administrator":"Administrator permissions",
-    "nono":"No one can have this permission. Specifically for testing."
+    "nono":"No one can have this permission. Specifically for testing.",
+    "offline_access":"allow offline access",
 }
 
 

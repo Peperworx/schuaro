@@ -7,7 +7,11 @@ import schuaro.users
 import schuaro.config
 
 
-app = FastAPI()
+app = FastAPI(
+    swagger_ui_init_oauth={
+        "usePkceWithAuthorizationCodeGrant":True
+    }
+)
 
 templates = Jinja2Templates(directory="templates")
 
