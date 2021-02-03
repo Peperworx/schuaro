@@ -1,0 +1,49 @@
+.floating-label {
+    margin-top: 10px;
+    margin-bottom: 0px;
+    height: 50px;
+}
+
+.floating-label label {
+    position: absolute;
+    display: inline-block;
+    left: 8px;
+    vertical-align: auto;
+    padding-top: 0px;
+    font-size: 8pt;
+}
+
+.floating-label input {
+    height: 50px;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    background-color: transparent;
+    border-bottom: 1px solid #777;
+    filter: none;
+}
+
+.floating-label input:invalid {
+    border-bottom: 1px solid red;
+}
+
+.floating-label input:focus {
+    border-bottom: 1px solid orange;
+}
+
+.floating-label .fl-div {
+    position: relative;
+    top: -58px;
+    height: 50px;
+    width: auto;
+    z-index: -999;
+}
+
+.floating-label input:placeholder-shown~.fl-div label {
+    font-size: 12pt;
+    padding-top: 15px;
+}
+
+.floating-label input::placeholder {
+    color: transparent;
+}
