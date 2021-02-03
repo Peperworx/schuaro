@@ -3,6 +3,7 @@
 """
 from ..utilities import global_classes
 from . import utils as user_utils
+from ..clients import utils as client_utils
 from .. import database
 from fastapi import (
     Request,
@@ -17,152 +18,60 @@ async def login(login_request: global_classes.LoginRequest):
     """
         Basic login for authorization code login
     """
-    # Parse scopes
-    scopes = login_request.scope.split(" ") if login_request.scope != "" else []
-    # Get the database
-    db = await database.get_db()
 
-    # Get the collections
-    col_clients = db["schuaro-clients"]
-    col_users = db["schuaro-users"]
+    # Parse in scopes
+    scopes = login_request.scope.split() if login_request.scope != "" else [] 
 
-    # Get our client
-    our_client = col_clients.find_one({
-        "client_id": config.settings.authcode_clientid
-    })
+    # Retrieve the client
+    client = await client_utils.get_client(login_request.client_id)
 
-    # Verify our client
-    if not our_client:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="client_no_exist",
-            headers={
-               "WWW-Authenticate":
-                f"Bearer{f' scope={login_request.scope}' if len(scopes) > 0 else ''}"
-            }
-        )
-    
-    # Verify our client_secret
-    if our_client["client_secret"].lower() != hashlib.sha256(config.settings.authcode_clientsecret.encode()).hexdigest().lower():
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="client_no_password",
-            headers={
-                "WWW-Authenticate":
-                    f"Bearer{f' scope={login_request.scope}' if len(scopes) > 0 else ''}"
-            }
-        )
-
-    # Verify our client has authorization
-    if "assign:authcode" not in our_client["permissions"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="client_no_permissions",
-            headers={
-                "WWW-Authenticate":
-                    f"Bearer{f' scope={login_request.scope}' if len(scopes) > 0 else ''}"
-            }
-        )
-    # Verify our client has requested scopes
-    for scope in scopes:
-        if f"issue:{scope}" not in our_client["permissions"]:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="client_no_permissions",
-                headers={
-                    "WWW-Authenticate":
-                        f"Bearer{f' scope={login_request.scope}' if len(scopes) > 0 else ''}"
-                }
-            )
-
-    # Get the client
-    client = col_clients.find_one({
-        "client_id": login_request.client_id
-    })
-
-    # Fail if non existant
+    # If it is none, fail
     if not client:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="client_no_exist",
-            headers={
-               "WWW-Authenticate":
-                f"Bearer{f' scope={login_request.scope}' if len(scopes) > 0 else ''}"
-            }
+            detail="no_client"
         )
     
+    # Verify the client can login with authcode
+    if "assign:authcode" not in client.permissions:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="client_no_permissions"
+        )
     
-    
-
-    # Verify the client has required scopes
+    # Verify the client has all required scopes
     for scope in scopes:
-        if f"issue:{scope}" not in client["permissions"]:
+        if f"issue:{scope}" not in client.permissions:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="client_no_permissions",
-                headers={
-                    "WWW-Authenticate":
-                        f"Bearer{f' scope={login_request.scope}' if len(scopes) > 0 else ''}"
-                }
+                detail="client_no_permissions"
             )
 
-    # Parse the username
-    try:
-        uname = login_request.username.split("#")[0]
-        tag = int(login_request.username.split("#")[1],16)
-    except:
-       raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="username_invalid",
-            headers={
-               "WWW-Authenticate":
-                f"Bearer{f' scope={login_request.scope}' if len(scopes) > 0 else ''}"
-            }
-        ) 
-    
-    # Get the user
-    user = await user_utils.get_user(uname,tag)
+    # Now we can verify the user
+    user = await user_utils.verify_user(
+        login_request.username,
+        login_request.password
+    )
 
-    # Check user exists
+    # If it is none, fail
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="user_no_exist",
-            headers={
-               "WWW-Authenticate":
-                f"Bearer{f' scope={login_request.scope}' if len(scopes) > 0 else ''}"
-            }
+            detail="no_user"
         )
     
-
-
-    # Check password
-    if hashlib.sha256(login_request.password.encode()).hexdigest().lower() != user.password.lower():
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="user_incorrect_password",
-            headers={
-               "WWW-Authenticate":
-                f"Bearer{f' scope={login_request.scope}' if len(scopes) > 0 else ''}"
-            }
-        )
-    
-    # Check user has permissions for scopes
+    # Now we check the user's scopes
     for scope in scopes:
-        if scope not in user.permissions:
+        if f"{scope}" not in user.permissions:
+            print(scope)
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="user_no_permissions",
-                headers={
-                    "WWW-Authenticate":
-                        f"Bearer{f' scope={login_request.scope}' if len(scopes) > 0 else ''}"
-                }
+                detail="user_no_permissions"
             )
     
-    # Time To live
-    ttl = 30
 
-    # Generate authcode
+    # Now we can just generate the authcode
+    ttl = 30
     authcode = await user_utils.issue_authcode(
         user,
         login_request,
@@ -170,24 +79,24 @@ async def login(login_request: global_classes.LoginRequest):
         scopes=scopes
     )
 
-    # If it failed, fail
+
+    # If it is none, fail
     if not authcode:
+        # This should never happen
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="authcode_gen_error",
-            headers={
-                "WWW-Authenticate":
-                    f"Bearer{f' scope={login_request.scope}' if len(scopes) > 0 else ''}"
-            }
+            detail="issue_failed"
         )
-
-    # If not, generate url
+    
+    # generate the get data
     get_data = {
-        "state":login_request.state,
+        "state": login_request.state,
         "code":authcode
     }
-    
-    # generate url
-    redirect_url = f"{login_request.redirect_uri}?{urllib.parse.urlencode(get_data)}"
 
+    # Generate url
+    redirect_url = f"{login_request.redirect_uri}?{urllib.parse.urlencode(get_data)}"
+    
+    # Return
     return redirect_url
+    

@@ -192,6 +192,12 @@ class AuthCode(BaseModel):
     # The redirect_uri of the authcode
     redirect_uri: str
 
+    # The code challenge
+    code_challenge: str
+
+    # The code challenge method
+    code_challenge_method: str
+
 class TokenResponse(BaseModel):
     """
         Models a token response for a token endpoint
@@ -235,3 +241,9 @@ class LoginRequest(BaseModel):
 
     # The state
     state: str = ""
+
+    # The code challenge
+    code_challenge: str
+
+    # The code challeng method
+    code_challenge_method: str

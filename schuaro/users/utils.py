@@ -288,12 +288,14 @@ async def issue_authcode(
 
     # Create data
     authcode_data = global_classes.AuthCode(
-        username=user.username,
-        tag=user.tag,
-        scopes=scopes,
+        username = user.username,
+        tag = user.tag,
+        scopes = scopes,
         expires = calendar.timegm(expiry.timetuple()),
-        session_id=user.session_id,
-        redirect_uri=login_request.redirect_uri
+        session_id = user.session_id,
+        redirect_uri = login_request.redirect_uri,
+        code_challenge = login_request.code_challenge,
+        code_challenge_method = login_request.code_challenge_method
     )
 
     # Validate

@@ -148,9 +148,12 @@ async def login(
         This is for token login authentication. Super basic authcode issueing
     """
     
-
+    # Get the authcode
     ret = await authcode.login(login_request)
 
+
+    # Redirect
     response.status_code = status.HTTP_303_SEE_OTHER
     response.headers["Location"] = ret
+    
     return {}

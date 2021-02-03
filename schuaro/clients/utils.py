@@ -52,9 +52,33 @@ async def extract_client(
 
 
 
+async def get_client(client_id: str) -> Optional[global_classes.Client]:
+    """
+        Retrieves a client from the database
+    """
+    
+    # Get the db
+    db = await database.get_db()
+
+    # Grab the clients collection
+    col = db["schuaro-clients"]
+
+    # Search for the client_id
+    client = col.find_one(
+        {
+            "client_id":client_id
+        }
+    )
+
+    # If we did not find it return none
+    if not client:
+        return None
+
+    # Return the client
+    return global_classes.Client(**dict(client))
 
 
-async def verify_client(client_id: str, client_secret: str):
+async def verify_client(client_id: str, client_secret: str) -> Optional[global_classes.Client]:
     """
         Verifies a client. Returns the value of the client in the database, or none if client was not found.
     """
