@@ -266,15 +266,24 @@ async def validate_authcode(token: global_classes.AuthCode, code_verifier: Optio
     padding = 4 - (len(token.code_challenge) % 4)
     token.code_challenge = token.code_challenge + ('=' * padding)
     
+
     # Decode the challenge
     challenge = base64.urlsafe_b64decode(token.code_challenge)
-
     
-    print(challenge.hex())
-    print(hashlib.sha256(code_verifier.encode()).hexdigest())
+    # If it is sha256, hash and compare
+    if token.code_challenge_method == "S256":
+        # Get the hex of challenge
+        challenge_hex = challenge.hex()
 
-    # If all is good, return true
-    return True
+        # Hash the code
+        code_hex = hashlib.sha256(code_verifier.encode()).hexdigest()
+
+        # Return if they are equal
+        return challenge_hex == code_hex
+    
+    # If not, compare
+    else:
+        return challenge == code_verifier
 
 async def decode_authcode(token:str,code_verifer:str) -> Optional[global_classes.AuthCode]:
     """
