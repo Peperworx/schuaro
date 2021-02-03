@@ -208,7 +208,7 @@ async def authorization_code(token_request: global_classes.OAuthTokenRequest, re
     
 
     # Decode the authcode
-    authcode = await user_utils.decode_authcode(token_request.code)
+    authcode = await user_utils.decode_authcode(token_request.code,token_request.code_verifier)
 
     # Check if authcode is valid, failing if not
     if not authcode:

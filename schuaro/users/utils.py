@@ -1,5 +1,5 @@
 # Retrieve the global_classes from utilities
-from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
+from schuaro.users.authcode import login
 from ..utilities import global_classes
 
 # Optional types
@@ -26,6 +26,9 @@ import secrets
 # Calendar and datetime for time stuff
 import calendar
 from datetime import datetime, time, timedelta
+
+# Base64 stuff
+import base64
 
 # Http error
 from fastapi import HTTPException, status
@@ -220,7 +223,7 @@ async def get_user(username: str, tag: int) -> Optional[global_classes.UserDB]:
         **user
     )
 
-async def validate_authcode(token: global_classes.AuthCode) -> bool:
+async def validate_authcode(token: global_classes.AuthCode, code_verifier: Optional[str] = None) -> bool:
     """
         Validates an authcode.
     """
@@ -248,10 +251,32 @@ async def validate_authcode(token: global_classes.AuthCode) -> bool:
         if scope not in user.permissions:
             return False
 
+    # Are we verifying a code challenge?
+    if not code_verifier:
+        # If we are not, we are all good
+        return True
+
+    # If we are, verify
+
+    # If the method is invalid, fail
+    if token.code_challenge_method not in ["S256","plain"]:
+        return False
+    
+    # Add back challenge padding
+    padding = 4 - (len(token.code_challenge) % 4)
+    token.code_challenge = token.code_challenge + ('=' * padding)
+    
+    # Decode the challenge
+    challenge = base64.urlsafe_b64decode(token.code_challenge)
+
+    
+    print(challenge.hex())
+    print(hashlib.sha256(code_verifier.encode()).hexdigest())
+
     # If all is good, return true
     return True
 
-async def decode_authcode(token:str) -> Optional[global_classes.AuthCode]:
+async def decode_authcode(token:str,code_verifer:str) -> Optional[global_classes.AuthCode]:
     """
         Decodes an authcode, returning none if fails
     """
@@ -270,7 +295,7 @@ async def decode_authcode(token:str) -> Optional[global_classes.AuthCode]:
     )
     
     # Validate and fail if invalid
-    if await validate_authcode(tok):
+    if await validate_authcode(tok,code_verifer):
         return tok
     else:
         return None

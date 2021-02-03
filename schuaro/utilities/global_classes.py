@@ -25,6 +25,7 @@ class OAuthTokenRequest(BaseModel):
     # Typically use these with external app logins
     code: Optional[str] # Code for authorization code grant
     redirect_uri: Optional[str] # Redirect for authorization code grant
+    code_verifier: Optional[str] # Code verifier for authcode grant
 
     # "Login with authentication app" is a good example of this.
     device_code: Optional[str] # Device code for Token Request grant
