@@ -97,6 +97,7 @@ async def issue_token_pair(user: global_classes.UserDB, ttl: int = 30, scopes: l
         "username":user.username,
         "tag":user.tag,
         "expires": calendar.timegm(exp_time.timetuple()),
+        "expires_in":ttl*60,
         "scopes":scopes,
         "session_id":user.session_id
     }
@@ -170,7 +171,6 @@ async def validate_access_token(token: global_classes.AccessToken) -> bool:
 
     # If all is good, return true
     return True
-    
 
 async def decode_access_token(token:str) -> Optional[global_classes.AccessToken]:
     """
@@ -192,6 +192,54 @@ async def decode_access_token(token:str) -> Optional[global_classes.AccessToken]
     
     # Validate and fail if invalid
     if await validate_access_token(tok):
+        return tok
+    else:
+        return None
+
+async def validate_refresh_token(token: global_classes.RefreshToken) -> bool:
+    """
+        Validates a refresh token
+    """
+    
+    # Get the user
+    user = get_user(token.username,token.tag)
+
+    # Validate the user
+    if not user:
+        return False
+    
+    # Check the session id
+    if token.session_id != user.session_id:
+        return False
+    
+    # Check the scopes
+    for scope in token.scopes:
+        if scope not in user.permissions:
+            return False
+    
+    # If here, we are all good
+    return True
+
+async def decode_refresh_token(token:str) -> Optional[global_classes.RefreshToken]:
+    """
+        Decodes a refresh token, returning none if fails
+    """
+    try:
+        decoded = jwt.decode(
+            token,
+            config.settings.secret,
+            "HS256"
+        )
+    except JWTError:
+        return None
+    
+    # Verify decoded
+    tok = global_classes.RefreshToken(
+        **decoded
+    )
+    
+    # Validate and fail if invalid
+    if await validate_refresh_token(tok):
         return tok
     else:
         return None

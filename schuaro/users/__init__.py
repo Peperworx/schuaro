@@ -44,6 +44,7 @@ oauth2_scheme = OAuth2PasswordBearer(
 oauth2_authcode = OAuth2AuthorizationCodeBearer(
     authorizationUrl=f"/login",
     tokenUrl=f"{router.prefix}{'/' if not router.prefix.endswith('/') else ''}token",
+    refreshUrl=f"{router.prefix}{'/' if not router.prefix.endswith('/') else ''}token",
     scopes=permissions.scopes
 )
 
@@ -110,7 +111,7 @@ async def token_authentication(
     """
     # Get the grant_type
     grant_type = token_request.grant_type
-
+    print(grant_type)
     # Basic password grant
     if grant_type == "password":
         return await grants.password(token_request,request)

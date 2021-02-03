@@ -264,6 +264,13 @@ async def client_credentials(token_request: global_classes.OAuthTokenRequest, re
     return {}
 
 async def refresh_token(token_request: global_classes.OAuthTokenRequest, request: Request):
+    """
+        Takes a refresh and access token, validates them, and issues a new token
+    """
+
+    # Decode the access token
+    decoded_refresh_token = user_utils.decode_refresh_token(token_request.refresh_token)
+    print("oohh")
     return {}
 
 async def device_code(token_request: global_classes.OAuthTokenRequest, request: Request):
