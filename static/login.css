@@ -1,0 +1,95 @@
+.floating-label {
+    margin-top: 10px;
+    margin-bottom: 0px;
+    height: 50px;
+}
+
+.floating-label label {
+    position: absolute;
+    display: inline-block;
+    left: 8px;
+    vertical-align: auto;
+    padding-top: 0px;
+    font-size: 8pt;
+}
+
+.floating-label input {
+    height: 50px;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    background-color: transparent;
+    border-bottom: 1px solid #777;
+    filter: none;
+}
+
+.floating-label input:invalid {
+    border-bottom: 1px solid red;
+}
+
+.floating-label input:focus {
+    border-bottom: 1px solid orange;
+}
+
+.floating-label .fl-div {
+    position: relative;
+    top: -50px;
+    height: 50px;
+    width: auto;
+    z-index: -999;
+}
+
+.floating-label input:placeholder-shown~.fl-div label {
+    font-size: 12pt;
+    padding-top: 15px;
+}
+
+.floating-label input::placeholder {
+    color: transparent;
+}
+
+.pwrx-button {
+    background-color: transparent;
+    border: 1px solid orange;
+    border-radius: 3px;
+    width: 265px;
+    height: 40px;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    filter: none;
+    margin-top: 10px;
+}
+
+.pwrx-button:hover {
+    background-color: orange;
+}
+
+body,
+html {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+}
+
+#login {
+    width: 100vw;
+    height: 100vh;
+    width: 300px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+@media (max-width: 400px) {
+    #login {
+        width: 100vw;
+        height: 100vh;
+        margin: 0px;
+        padding: 0px;
+    }
+}
