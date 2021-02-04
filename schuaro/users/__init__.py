@@ -33,7 +33,10 @@ from . import utils as user_utils
 from . import authcode
 
 # Get the router ready
-router = APIRouter(prefix="/users")
+router = APIRouter(
+    prefix="/users",
+    
+)
 
 # Password bearer
 # We use this for the sake of swagger
@@ -102,7 +105,7 @@ async def current_user(security_scopes: SecurityScopes, token: str = Depends(oau
 
 
 # Token route. OAuth token support
-@router.post("/token", response_model=global_classes.TokenPair)
+@router.post("/token", response_model=global_classes.TokenPair, tags=["authentication"])
 async def token_authentication(
     token_request: global_classes.OAuthTokenRequest = Depends(global_classes.OAuthTokenRequest.as_form), # This one took a lot of googling.
     request: Request = None):
@@ -139,7 +142,7 @@ async def get_self(user: global_classes.UserDB = Security(current_user,scopes=["
     return global_classes.User(**dict(user))
 
 
-@router.post("/login")
+@router.post("/login", tags=["authentication"])
 async def login(
     response: Response,
     login_request: global_classes.LoginRequest = Depends(global_classes.LoginRequest.as_form)

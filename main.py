@@ -7,10 +7,18 @@ import schuaro.users
 import schuaro.config
 
 
+tags_metadata = [
+    {
+        "name": "authentication",
+        "description": "OAuth2 Authentication",
+    },
+]
+
 app = FastAPI(
-    swagger_ui_init_oauth={
+    swagger_ui_init_oauth = {
         "usePkceWithAuthorizationCodeGrant":True
-    }
+    },
+    openapi_tags = tags_metadata
 )
 
 app.mount("/static",StaticFiles(directory="static"),name="static")
