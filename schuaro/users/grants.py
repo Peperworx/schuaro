@@ -270,7 +270,43 @@ async def refresh_token(token_request: global_classes.OAuthTokenRequest, request
 
     # Decode the access token
     decoded_refresh_token = user_utils.decode_refresh_token(token_request.refresh_token)
-    print("oohh")
+    
+    # Parse scopes
+    scopes = token_request.scope.split() if token_request.scope != "" else []
+
+    # Confirm that all scopes are in the refresh token
+    for scope in scopes:
+        if scope not in decoded_refresh_token.scopes:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="no_permissions"
+            )
+    
+    # Get the user
+    user = await user_utils.get_user(token_request.username,token_request.tag)
+
+    # Confirm exists
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="user_no_exist"
+        )
+
+    # Confirm has permissions
+    for scope in scopes:
+        if scope not in user.permissions:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="user_no_permissions"
+            )
+    
+    # Verify client
+    client = await client_utils.verify_client(
+        token_request.client_id,
+        token_request.client_secret
+    )
+
+    
     return {}
 
 async def device_code(token_request: global_classes.OAuthTokenRequest, request: Request):
