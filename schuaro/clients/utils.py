@@ -111,7 +111,11 @@ async def verify_client(client_id: str, client_secret: str) -> Optional[global_c
     # Compare secrets
     if hashed_secret != client.client_secret.lower():
         # Return none if compare failed
-        return None
+        # But only if we have a secret defined
+        if client.client_secret != "":
+            return None
+        if "login:nosecret" not in client.permissions:
+            return None
     
     # If we are here, we are all good! Lets just return the client (without secret, duh)
     return global_classes.Client(**dict(client))

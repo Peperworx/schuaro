@@ -4,6 +4,26 @@ import webbrowser
 import urllib.parse
 import secrets
 import hashlib
+import http.server
+import socketserver
+import threading
+import time
+
+class AuthComplete(Exception):
+    pass
+
+class HttpRequestHandler(http.server.SimpleHTTPRequestHandler):
+    def close_in_five(self):
+        time.sleep(5)
+        raise AuthComplete
+    def do_GET(self):
+        t = threading.Thread(target=self.close_in_five)
+        t.start()
+        return "Content-Type: text/html\n\nOK"
+        
+
+
+
 class SchuaroClient:
     def __init__(self, schuaro_uri: str, client_id: str, client_secret: str):
         """
@@ -74,3 +94,16 @@ class SchuaroClient:
         uri = f'http://{self.schuaro_uri}{"" if self.schuaro_uri.endswith("/") else "/"}login?{encoded}'
 
         return uri,
+    
+    def initiate_callback(self, callback):
+        """
+            Authenticates and calls callback when done.
+        """
+
+        with socketserver.TCPServer(("", 0), HttpRequestHandler) as httpd:
+            print("Awaiting Response on port",httpd.server_address[1])
+            try:
+                httpd.serve_forever()
+            except AuthComplete:
+                httpd.server_close()
+                print("Authenticated")
