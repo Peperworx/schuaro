@@ -5,7 +5,6 @@ from fastapi import (
     Request,
     HTTPException,
     status,
-    Form,
     Security,
     Response
 )
@@ -18,19 +17,19 @@ from fastapi.security import (
 )
 
 
-from . import permissions
+from schuaro.users import permissions
 
 # Global data
-from ..utilities import global_classes as global_classes
+from schuaro.utilities import global_classes as global_classes
 
 # Grants
-from . import grants
+from schuaro.users import grants
 
 # User utilities
-from . import utils as user_utils
+from schuaro.users import utils as user_utils
 
 # Authcode stuff
-from . import authcode
+from schuaro.users import authcode
 
 # Get the router ready
 router = APIRouter(

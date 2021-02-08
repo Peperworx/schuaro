@@ -5,10 +5,10 @@ from fastapi import (
 )
 
 # Global stuff
-from ..utilities import global_classes
+from schuaro.utilities import global_classes
 
 # Users stuff
-from ..users import current_user
+from schuaro.users import current_user
 
 # Prep router
 router = APIRouter(

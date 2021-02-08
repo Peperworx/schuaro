@@ -4,7 +4,7 @@
 
 from pydantic import BaseModel
 from typing import Optional
-from . import as_form
+from schuaro.utilities import as_form
 
 @as_form
 class OAuthTokenRequest(BaseModel):

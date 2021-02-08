@@ -1,18 +1,17 @@
 # Retrieve the global_classes from utilities
-from schuaro.users.authcode import login
-from ..utilities import global_classes
+from schuaro.utilities import global_classes
 
 # Optional types
 from typing import Optional
 
 # Get database utilities
-from .. import database
+from schuaro import database
 
 # Get permissions information
-from . import permissions
+from schuaro.users import permissions
 
 # Get configuration data
-from .. import config
+from schuaro import config
 
 # Hashlib for password hashing
 import hashlib

@@ -1,18 +1,14 @@
 """
     Handers for the default authcode issuer.
 """
-from ..utilities import global_classes
-from . import utils as user_utils
-from ..clients import utils as client_utils
-from .. import database
+from schuaro.utilities import global_classes
+from schuaro.users import utils as user_utils
+from schuaro.clients import utils as client_utils
 from fastapi import (
-    Request,
     status,
     HTTPException
 )
-import hashlib
 import urllib.parse
-from .. import config
 
 async def login(login_request: global_classes.LoginRequest):
     """

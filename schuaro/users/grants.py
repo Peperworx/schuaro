@@ -1,6 +1,6 @@
-from ..utilities import global_classes
-from ..clients import utils as client_utils
-from . import utils as user_utils
+from schuaro.utilities import global_classes
+from schuaro.clients import utils as client_utils
+from schuaro.users import utils as user_utils
 from fastapi import (
     Request,
     status,
@@ -162,7 +162,7 @@ async def authorization_code(token_request: global_classes.OAuthTokenRequest, re
                 "WWW-Authenticate": f"Bearer{f' scope={token_request.scope}' if len(scopes) > 0 else ''}"
             }
         )
-
+    
     # Verify the client
     client_verify = await client_utils.verify_client(
         client_details.client_id,
@@ -205,7 +205,6 @@ async def authorization_code(token_request: global_classes.OAuthTokenRequest, re
                         f"Bearer{f' scope={token_request.scope}' if len(scopes) > 0 else ''}"
                 }
             )
-    
 
     # Decode the authcode
     authcode = await user_utils.decode_authcode(token_request.code,token_request.code_verifier)
@@ -220,7 +219,7 @@ async def authorization_code(token_request: global_classes.OAuthTokenRequest, re
                         f"Bearer{f' scope={token_request.scope}' if len(scopes) > 0 else ''}"
                 }
         )
-
+    
     # Verify the authcodes redirect_uri
     if authcode.redirect_uri != token_request.redirect_uri:
         raise HTTPException(

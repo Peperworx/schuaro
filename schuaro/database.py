@@ -1,5 +1,5 @@
-from .utilities import global_classes
-from .config import settings
+from schuaro.utilities import global_classes
+from schuaro.config import settings
 import pymongo
 
 async def get_db():

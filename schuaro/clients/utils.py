@@ -1,8 +1,8 @@
 # Retrieve the global_classes from utilities
-from ..utilities import global_classes
+from schuaro.utilities import global_classes
 
 # Get database utilities
-from .. import database
+from schuaro import database
 
 # We need optional from typing, for, well, optional return types
 from typing import Optional
