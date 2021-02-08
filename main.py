@@ -21,8 +21,11 @@ app = FastAPI(
     },
     openapi_tags = tags_metadata
 )
-
+# Static files
 app.mount("/static",StaticFiles(directory="static"),name="static")
+
+# Javascript client
+app.mount("/client",StaticFiles(directory="client/js"),name="client")
 
 templates = Jinja2Templates(directory="templates")
 
@@ -45,10 +48,14 @@ async def login(request: Request):
 async def party_test(request: Request):
     return templates.TemplateResponse("party_test.html",{"request":request})
 
-@app.get("/party_test_callback")
-async def party_test(request: Request):
-    return templates.TemplateResponse("party_test_callback.html",{"request":request})
-
+@app.post("/party_test_login")
+async def party_test_login(request: Request):
+    """
+        This is the preferred example of handling local logins.
+        This should exchange an authorization code for a token, and return the token response.
+        The reason why we use this, is because it requires a clientid.
+    """
+    return {}
 
 @app.get("/")
 async def root():
