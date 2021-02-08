@@ -5,6 +5,7 @@ from fastapi.templating import Jinja2Templates
 
 import schuaro.users
 import schuaro.config
+import schuaro.party
 
 
 tags_metadata = [
@@ -26,14 +27,28 @@ app.mount("/static",StaticFiles(directory="static"),name="static")
 templates = Jinja2Templates(directory="templates")
 
 
-
+# Router for users
 app.include_router(
     schuaro.users.router
+)
+
+# Router for party
+app.include_router(
+    schuaro.party.router
 )
 
 @app.get("/login")
 async def login(request: Request):
     return templates.TemplateResponse("login.html",{"request":request})
+
+@app.get("/party_test")
+async def party_test(request: Request):
+    return templates.TemplateResponse("party_test.html",{"request":request})
+
+@app.get("/party_test_callback")
+async def party_test(request: Request):
+    return templates.TemplateResponse("party_test_callback.html",{"request":request})
+
 
 @app.get("/")
 async def root():
