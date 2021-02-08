@@ -133,7 +133,7 @@ async def password(token_request: global_classes.OAuthTokenRequest, request: Req
     # Generate the response
     ret = {
         "token_type":"bearer",
-        "expires_in":ttl*60, # How many seconds till expiry
+        "expires":ttl*60, # How many seconds till expiry
         "access_token":tokens.access_token,
         "scope": " ".join(scopes), # The scopes
         "refresh_token":tokens.refresh_token # The refresh token
@@ -250,7 +250,7 @@ async def authorization_code(token_request: global_classes.OAuthTokenRequest, re
     # Generate the response
     ret = {
         "token_type":"bearer",
-        "expires_in":ttl*60, # How many seconds till expiry
+        "expires":ttl*60, # How many seconds till expiry
         "access_token":issued_tokens.access_token,
         "scope": " ".join(scopes), # The scopes
         "refresh_token":issued_tokens.refresh_token # The refresh token
@@ -329,7 +329,7 @@ async def refresh_token(token_request: global_classes.OAuthTokenRequest, request
 
     # Return the token
     return {
-        "expires_in":ttl*60,
+        "expires":ttl*60,
         "access_token":issued.access_token,
         "refresh_token":issued.refresh_token,
         "token_type":issued.token_type

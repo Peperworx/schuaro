@@ -96,7 +96,7 @@ async def issue_token_pair(user: global_classes.UserDB, ttl: int = 30, scopes: l
         "username":user.username,
         "tag":user.tag,
         "expires": calendar.timegm(exp_time.timetuple()),
-        "expires_in":ttl*60,
+        "expires":ttl*60,
         "scopes":scopes,
         "session_id":user.session_id
     }

@@ -208,7 +208,7 @@ class TokenResponse(BaseModel):
     token_type: str
 
     # The number of seconds that it will expire in
-    expires_in: int
+    expires: int
 
     # The access token
     access_token: str

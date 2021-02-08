@@ -37,7 +37,8 @@ developer_permissions = [
 issue_clients = {f"issue:{k}":f"The ability to issue {k}" for k,v in scopes.items()}
 
 scopes_clients = {
-    
+    "login:password":"Allows password login. This should only be issued to schuaro itself",
+    "login:authcode":"Allows authcode login"
 } | issue_clients
 
 # Just allow default issue all for now.
