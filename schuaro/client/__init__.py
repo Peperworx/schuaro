@@ -1,6 +1,9 @@
 from schuaro.utilities import global_classes
 import requests
-
+import webbrowser
+import urllib.parse
+import secrets
+import hashlib
 class SchuaroClient:
     def __init__(self, schuaro_uri: str, client_id: str, client_secret: str):
         """
@@ -35,9 +38,39 @@ class SchuaroClient:
 
         # Send the request
         req = requests.post(
-            f"{self.schuaro_uri}/users/token",
-            post_data
+            f'http://{self.schuaro_uri}{"" if self.schuaro_uri.endswith("/") else "/"}users/token',
+            dict(post_data)
         )
 
+        print(req)
 
-        
+
+    def generate_login_url(self, redirect_uri: str, scope: list[str] = ["me"]):
+        """
+            Generates a login url, also returns the state and code_verifier
+        """
+
+        # Generate code_verifier
+        code_verifier = hex(secrets.randbits(32))[2:]
+
+        # Generate state
+        state = hex(secrets.randbits(32))[2:]
+
+        # URL params
+        get_data = {
+            "code_challenge": hashlib.sha256(code_verifier.encode()).hexdigest(),
+            "code_challenge_method":"S256",
+            "client_id":self.client_id,
+            "state": state,
+            "redirect_uri": redirect_uri,
+            "response_type": "code",
+            "scope": " ".join(scope)
+        }
+
+        # Encode
+        encoded = urllib.parse.urlencode(get_data)
+
+        # The uri
+        uri = f'http://{self.schuaro_uri}{"" if self.schuaro_uri.endswith("/") else "/"}login?{encoded}'
+
+        return uri,
