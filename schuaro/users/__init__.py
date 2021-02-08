@@ -113,7 +113,7 @@ async def token_authentication(
     """
     # Get the grant_type
     grant_type = token_request.grant_type
-    print(grant_type)
+    
     # Basic password grant
     if grant_type == "password":
         return await grants.password(token_request,request)

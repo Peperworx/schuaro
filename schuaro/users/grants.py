@@ -305,8 +305,35 @@ async def refresh_token(token_request: global_classes.OAuthTokenRequest, request
         token_request.client_secret
     )
 
+    # Confirm exists
+    if not client:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="client_no_exist"
+        )
     
-    return {}
+    # Check client permissions
+    for scope in scopes:
+        if scope not in client.permissions:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="client_no_permissions"
+            )
+    ttl=30
+    # Issue token
+    issued = user_utils.issue_token_pair(
+        user,
+        ttl,
+        scopes=scopes
+    )
+
+    # Return the token
+    return {
+        "expires_in":ttl*60,
+        "access_token":issued.access_token,
+        "refresh_token":issued.refresh_token,
+        "token_type":issued.token_type
+    }
 
 async def device_code(token_request: global_classes.OAuthTokenRequest, request: Request):
     return {}
