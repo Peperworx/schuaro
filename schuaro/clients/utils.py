@@ -2,7 +2,7 @@
 from schuaro.utilities import global_classes
 
 # Get database utilities
-from schuaro import database
+from schuaro import config, database
 
 # We need optional from typing, for, well, optional return types
 from typing import Optional
@@ -65,7 +65,7 @@ async def get_client(client_id: str) -> Optional[global_classes.Client]:
     db = await database.get_db()
 
     # Grab the clients collection
-    col = db["schuaro-clients"]
+    col = db[f"{config.settings.col_prefix}-clients"]
 
     # Search for the client_id
     client = col.find_one(
@@ -92,7 +92,7 @@ async def verify_client(client_id: str, client_secret: str) -> Optional[global_c
 
 
     # Grab the clients collection
-    col = db["schuaro-clients"]
+    col = db[f"{config.settings.col_prefix}-clients"]
 
     # Search for the client_id
     client = col.find_one(

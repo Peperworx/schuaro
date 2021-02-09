@@ -51,7 +51,7 @@ async def verify_user(username: str, password: str) -> global_classes.UserDB:
 
 
     # Grab the users collection
-    col = db["schuaro-users"]
+    col = db[f"{config.settings.col_prefix}-users"]
 
     # Find the user
     user = col.find_one(
@@ -252,7 +252,7 @@ async def get_user(username: str, tag: int) -> Optional[global_classes.UserDB]:
 
     # Retrive the database and the collection
     db = await database.get_db()
-    col = db["schuaro-users"]
+    col = db[f"{config.settings.col_prefix}-users"]
 
     # Get the user
     user = col.find_one(

@@ -8,8 +8,7 @@ async def get_db():
     """
     # Create Mongo instance
     cli = pymongo.MongoClient(
-        settings.mongo_host,
-        settings.mongo_port
+        settings.mongo_connstring
     )
 
     # Grab DB

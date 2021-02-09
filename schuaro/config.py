@@ -3,11 +3,12 @@ from pydantic import BaseSettings
 
 class Settings(BaseSettings):
     secret: str
-    mongo_host: str
-    mongo_port: int
+    mongo_connstring: str
     db_name: str
-    authcode_clientid: str
-    authcode_clientsecret: str
+    col_prefix: str
+    client_id: str
+    client_secret: str
+    login_client_id: str
 
     class Config:
         env_file = ".env"
