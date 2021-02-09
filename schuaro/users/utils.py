@@ -96,7 +96,7 @@ async def issue_token_pair(user: global_classes.UserDB, ttl: int = 30, scopes: l
         "username":user.username,
         "tag":user.tag,
         "expires": calendar.timegm(exp_time.timetuple()),
-        "expires":ttl*60,
+        "expires_in":ttl*60,
         "scopes":scopes,
         "session_id":user.session_id
     }
@@ -127,7 +127,7 @@ async def issue_token_pair(user: global_classes.UserDB, ttl: int = 30, scopes: l
 
     # Validate the access token
     access_token_valid = await validate_access_token(global_classes.AccessToken(**access_data))
-
+    
     # If access token is not valid, fail
     if not access_token_valid:
         return None
@@ -147,7 +147,8 @@ async def validate_access_token(token: global_classes.AccessToken) -> bool:
 
     # Validate expiry
     current_time = calendar.timegm(datetime.utcnow().timetuple())
-
+    
+    
     # If expires < current time, fail
     if token.expires < current_time:
         return False
@@ -302,7 +303,7 @@ async def validate_authcode(token: global_classes.AuthCode, code_verifier: Optio
     if not code_verifier:
         # If we are not, we are all good
         return True
-
+    
     # If we are, verify
 
     # If the method is invalid, fail
@@ -321,10 +322,10 @@ async def validate_authcode(token: global_classes.AuthCode, code_verifier: Optio
     if token.code_challenge_method == "S256":
         # Get the hex of challenge
         challenge_hex = challenge.hex()
-
+        
         # Hash the code
         code_hex = hashlib.sha256(code_verifier.encode()).hexdigest()
-
+        
         # Return if they are equal
         return challenge_hex == code_hex
     

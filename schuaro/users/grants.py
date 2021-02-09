@@ -168,7 +168,7 @@ async def authorization_code(token_request: global_classes.OAuthTokenRequest, re
         client_details.client_id,
         client_details.client_secret
     )
-
+    
     # If it is none, fail
     if not client_verify:
         raise HTTPException(
@@ -180,7 +180,7 @@ async def authorization_code(token_request: global_classes.OAuthTokenRequest, re
             }
         )
     
-
+    
     # Now we need to verify the client can issue authcodes
     if "login:authcode" not in client_verify.permissions:
         raise HTTPException(
@@ -205,10 +205,10 @@ async def authorization_code(token_request: global_classes.OAuthTokenRequest, re
                         f"Bearer{f' scope={token_request.scope}' if len(scopes) > 0 else ''}"
                 }
             )
-
+    
     # Decode the authcode
     authcode = await user_utils.decode_authcode(token_request.code,token_request.code_verifier)
-
+    
     # Check if authcode is valid, failing if not
     if not authcode:
         raise HTTPException(
@@ -246,7 +246,7 @@ async def authorization_code(token_request: global_classes.OAuthTokenRequest, re
         ttl=ttl,
         scopes=authcode.scopes
     )
-
+    
     # Generate the response
     ret = {
         "token_type":"bearer",

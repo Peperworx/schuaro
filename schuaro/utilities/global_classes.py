@@ -145,6 +145,9 @@ class AccessToken(BaseModel):
     # The expiry time
     expires: int
 
+    # How long till it expires
+    expires_in: int
+
     # Scopes granted
     scopes: list[str]
 

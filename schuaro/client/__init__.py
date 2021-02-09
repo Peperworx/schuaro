@@ -6,20 +6,31 @@ import secrets
 import hashlib
 import http.server
 import socketserver
-import threading
+import os
 import time
-
+import threading
+import base64
 class AuthComplete(Exception):
     pass
 
+class TCPServer(socketserver.TCPServer):
+    auth_complete:bool=False
 class HttpRequestHandler(http.server.SimpleHTTPRequestHandler):
-    def close_in_five(self):
-        time.sleep(5)
-        raise AuthComplete
+    
     def do_GET(self):
-        t = threading.Thread(target=self.close_in_five)
-        t.start()
-        return "Content-Type: text/html\n\nOK"
+        
+        self.send_response(200)
+        self.send_header('Content-type','text/html; charset=UTF-8')
+        self.end_headers()
+        with open(os.path.join(os.path.dirname(__file__),"response.html"), 'rb') as f:
+            while c := f.read(1024):
+                self.wfile.write(c)
+        if not self.server.has_served:
+            params = {i.split("=")[0]:i.split("=")[1] for i in self.path.split("?")[1].split("&")}
+            self.server.has_served = params
+        return
+            
+        
         
 
 
@@ -56,14 +67,18 @@ class SchuaroClient:
         # Set the code_verifier
         post_data.code_verifier = code_verifier
 
+        # Set the client id
+        post_data.client_id = self.client_id
+        post_data.client_secret = self.client_secret
+
         # Send the request
         req = requests.post(
-            f'http://{self.schuaro_uri}{"" if self.schuaro_uri.endswith("/") else "/"}users/token',
+            f'{self.schuaro_uri}{"" if self.schuaro_uri.endswith("/") else "/"}users/token',
             dict(post_data)
         )
 
-        print(req)
-
+        print(req.content)
+        print()
 
     def generate_login_url(self, redirect_uri: str, scope: list[str] = ["me"]):
         """
@@ -71,14 +86,14 @@ class SchuaroClient:
         """
 
         # Generate code_verifier
-        code_verifier = hex(secrets.randbits(32))[2:]
+        code_verifier = hex(secrets.randbits(32))
 
         # Generate state
         state = hex(secrets.randbits(32))[2:]
-
+        print(hashlib.sha256(code_verifier.encode()).hexdigest())
         # URL params
         get_data = {
-            "code_challenge": hashlib.sha256(code_verifier.encode()).hexdigest(),
+            "code_challenge": base64.urlsafe_b64encode(hashlib.sha256(code_verifier.encode()).digest()).rstrip(b"=").decode(),
             "code_challenge_method":"S256",
             "client_id":self.client_id,
             "state": state,
@@ -91,19 +106,63 @@ class SchuaroClient:
         encoded = urllib.parse.urlencode(get_data)
 
         # The uri
-        uri = f'http://{self.schuaro_uri}{"" if self.schuaro_uri.endswith("/") else "/"}login?{encoded}'
+        uri = f'{self.schuaro_uri}{"" if self.schuaro_uri.endswith("/") else "/"}login?{encoded}'
 
-        return uri,
+        return uri,state,code_verifier
     
-    def initiate_callback(self, callback):
+    def initiate_callback(self, callback, scope: list[str] = ["me"]):
         """
             Authenticates and calls callback when done.
         """
+        # Get the server class ready
+        httpd = TCPServer(("", 0), HttpRequestHandler)
+        httpd.has_served = None
+        
+        # Start the server
+        t = threading.Thread(target=httpd.serve_forever)
+        t.start()
+        
+        # Redirect uri
+        redirect_uri = f"http://localhost:{httpd.server_address[1]}"
 
-        with socketserver.TCPServer(("", 0), HttpRequestHandler) as httpd:
-            print("Awaiting Response on port",httpd.server_address[1])
+        # Generate the url
+        url = self.generate_login_url(
+                redirect_uri,
+                scope=scope
+            )
+
+        # Open the browser
+        webbrowser.open(
+            url[0]
+        )
+
+        # Say that we are awaiting response
+        print(f"Awaiting Response at http://localhost:{httpd.server_address[1]}")
+
+        # Wait until we have recieved the request
+        while not httpd.has_served:
             try:
-                httpd.serve_forever()
-            except AuthComplete:
-                httpd.server_close()
-                print("Authenticated")
+                time.sleep(0.1)
+            except KeyboardInterrupt:
+                httpd.shutdown()
+                raise
+        # Shutdown
+        httpd.shutdown()
+
+        # Say that authentication detected
+        print("Authentication detected")
+
+        # Grab the query parameters
+        params = httpd.has_served
+
+        # Verify state
+        if params.get("state") != url[1]:
+            raise ValueError("States are not equal. This may mean a man in the middle attack")
+        
+        # Now request the token via authcode
+        token = self.authorization_code_request(
+            params.get("code"),
+            url[2],
+            redirect_uri
+        )
+        print(token)

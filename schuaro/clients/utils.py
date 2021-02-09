@@ -34,15 +34,19 @@ async def extract_client(
 
     # Now Check for client id and secret in basic auth header
     try:
-        if not client_id or not client_secret:
+        if not client_id:
             authHeader = base64.b64decode(request.headers["authorization"].split(" ")[1])
             client_id, client_secret = [a.decode() for a in authHeader.split(b":")]
     except:
         # If we are here, it 100% does not exist in the auth header
         # And it does not exist (fully) in the token request.
         # Return None
-        return None
-    
+        return global_classes.ClientAuthentication(
+            client_id=client_id,
+            client_secret=""
+        )
+    if not client_secret:
+        client_secret = ""
     # If it exists, we will have reached this point
     # Lets create the return structure and return
     return global_classes.ClientAuthentication(
@@ -112,10 +116,9 @@ async def verify_client(client_id: str, client_secret: str) -> Optional[global_c
     if hashed_secret != client.client_secret.lower():
         # Return none if compare failed
         # But only if we have a secret defined
-        if client.client_secret != "":
+        if client_secret != "" and "login:nosecret" not in client.permissions:
             return None
-        if "login:nosecret" not in client.permissions:
-            return None
+        
     
     # If we are here, we are all good! Lets just return the client (without secret, duh)
     return global_classes.Client(**dict(client))

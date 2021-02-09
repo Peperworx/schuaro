@@ -5,7 +5,7 @@ import time
 
 
 # Our clientid. set this to your value
-client_id = "someid"
+client_id = "logintest"
 
 # It is best to leave the client secret out, as long as your client has login permissions
 
@@ -24,12 +24,12 @@ def on_login(access_token, refresh_token, expires):
 # This starts a server, and opens the browser for authentication
 sc.initiate_callback(
     on_login, # Specify our login callback
+    scope = [
+        "me"
+    ]
 )
 
 
 
 
 
-# Hold forever
-while True:
-    time.sleep(1)
