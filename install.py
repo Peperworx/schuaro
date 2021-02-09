@@ -15,9 +15,10 @@ import pymongo
 from schuaro.users import permissions
 
 console = Console()
-
+mconnstring = None
 
 def request_mongodb():
+    global mconnstring
     console.print("1. Connection String")
     console.print("2. Enter host and port manually")
 
@@ -25,6 +26,7 @@ def request_mongodb():
 
     if connection_method == "1":
         connection_string = Prompt.ask("Please enter your mongodb connection string")
+        mconnstring=connection_string
         with console.status("Trying to connect to mongodb"):
             server_info = None
             mongo_client = None
@@ -43,6 +45,7 @@ def request_mongodb():
     elif connection_method == "2":
         host = Prompt.ask("Please enter your mongodb host", default="localhost")
         port = Prompt.ask("Please enter your mongodb port", default="27017")
+        mconnstring = f"mongodb://{host}:{port}/"
         while not port.isdecimal():
             print("[red]Please enter a valid port number[/red]")
             port = Prompt.ask("Please enter your mongodb port", default="27017")
@@ -185,6 +188,20 @@ with console.status("Creating login client"):
 
 console.print("[green]Setup Successful[/green]")
 
+envData = {
+    "SECRET":hex(secrets.randbits(256))[2:],
+    "MONGO_CONNSTRING":mconnstring,
+    "DB_NAME":database_name,
+    "COL_PREFIX": collection_prefix,
+    "CLIENT_ID":init_client_id,
+    "CLIENT_SECRET": init_client_secret,
+    "LOGIN_CLIENT_ID": login_client_id
+}
+
+with open(os.path.join(os.path.dirname(__file__),".env"),"w+") as f:
+    f.write("\n".join([f"{k}={v}" for k,v in envData.items()]))
+
+console.print("[green]Generated .env[/green]")
 
 console.print(f"[yellow]NOTICE[/yellow] Save the following values somewhere safe.")
 console.print(f"Keep them safe, keep them secret.")
