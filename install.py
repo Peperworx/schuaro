@@ -76,7 +76,7 @@ database_exists = False
 if database_name in mongo.list_database_names():
     database_exists = True
     if any([i.startswith(collection_prefix) for i in mongo[database_name].list_collection_names()]):
-        confirm = Confirm.ask("[red]Warning[/red] That database already exists, and contains collections with the same prefix previously specified. Do you want to continue?")
+        confirm = Confirm.ask("[red]Warning: Destructive action [/red] That database already exists, and contains collections with the same prefix previously specified. Do you want to continue?")
     else:
         confirm = Confirm.ask("[blue]Notice[/blue] That database already exists, but there are no conflicts. Do you want to continue?")
 
@@ -135,3 +135,59 @@ with console.status("Creating initial user"):
     console.print("[green]Created user[/green]")
     
 
+# Prompt for reserved names
+
+resed = Prompt.ask("Enter reserved names separated by spaces")
+
+res_names = resed.split()
+
+# Create the reserved prefixes
+with console.status("Creating reserved prefixes"):
+    col = db[f"{collection_prefix}-reserved"]
+
+    # Remove all documents
+    col.delete_many({})
+
+    for r in res_names:
+        col.insert_one({
+            "reserved": r,
+            "reason":0
+        })
+
+# Generate initial internal client details
+init_client_id = hex(secrets.randbits(256))[2:]
+init_client_secret = hex(secrets.randbits(256))[2:]
+
+# Generate the clientid for the login client
+login_client_id = hex(secrets.randbits(256))[2:]
+
+col = db[f"{collection_prefix}-clients"]
+
+# Remove all documents
+col.delete_many({})
+
+# Create the initial internal client
+with console.status("Creating internal client"):
+
+    col.insert_one({
+        "client_id": init_client_id,
+        "client_secret":hashlib.sha256(init_client_secret.encode()).hexdigest(),
+        "permissions": list(permissions.scopes_clients.keys())
+    })
+
+# Create the login client
+with console.status("Creating login client"):
+    col.insert_one({
+        "client_id": login_client_id,
+        "client_secret":"",
+        "permissions": list(permissions.scopes_clients.keys())
+    })
+
+console.print("[green]Setup Successful[/green]")
+
+
+console.print(f"[yellow]NOTICE[/yellow] Save the following values somewhere safe.")
+console.print(f"Keep them safe, keep them secret.")
+console.print(f"Initial client id: {init_client_id}")
+console.print(f"Initial client secret: {init_client_secret}")
+console.print(f"Login client id: {login_client_id}")
