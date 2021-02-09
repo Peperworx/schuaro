@@ -16,18 +16,15 @@ sc = client.SchuaroClient(
 )
 
 
-# This is our login callback
-def on_login(access_token, refresh_token, expires):
-    print(access_token)
-
-
-# This starts a server, and opens the browser for authentication
-sc.initiate_callback(
-    on_login, # Specify our login callback
+# This opens a browser for login, and blocks until login is sucessful
+sc.login(
     scope = [
         "me"
     ]
 )
+
+
+
 
 
 

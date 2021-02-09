@@ -10,7 +10,7 @@ import os
 import time
 import threading
 import base64
-class AuthComplete(Exception):
+class ApiError(Exception):
     pass
 
 class TCPServer(socketserver.TCPServer):
@@ -30,7 +30,8 @@ class HttpRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.server.has_served = params
         return
             
-        
+    def log_message(self, format, *args):
+        return
         
 
 
@@ -47,6 +48,9 @@ class SchuaroClient:
         # Set the client details
         self.client_id = client_id
         self.client_secret = client_secret
+
+        # Clear the token
+        self.token = None
     
     def authorization_code_request(self, authcode: str, code_verifier: str, redirect_uri: str):
         """
@@ -77,8 +81,12 @@ class SchuaroClient:
             dict(post_data)
         )
 
-        print(req.content)
-        print()
+        # If not ok, raise
+        if not req.ok:
+            raise ApiError("Unable to authenticate with server")
+        
+        return req.json()
+
 
     def generate_login_url(self, redirect_uri: str, scope: list[str] = ["me"]):
         """
@@ -90,7 +98,7 @@ class SchuaroClient:
 
         # Generate state
         state = hex(secrets.randbits(32))[2:]
-        print(hashlib.sha256(code_verifier.encode()).hexdigest())
+        
         # URL params
         get_data = {
             "code_challenge": base64.urlsafe_b64encode(hashlib.sha256(code_verifier.encode()).digest()).rstrip(b"=").decode(),
@@ -165,4 +173,66 @@ class SchuaroClient:
             url[2],
             redirect_uri
         )
-        print(token)
+        
+        # And then call the callback
+        callback(self, token)
+    def login(self, scope: list[str] = ["me"]):
+        """
+            Authenticates and calls callback when done.
+        """
+        # Get the server class ready
+        httpd = TCPServer(("", 0), HttpRequestHandler)
+        httpd.has_served = None
+        
+        # Start the server
+        t = threading.Thread(target=httpd.serve_forever)
+        t.start()
+        
+        # Redirect uri
+        redirect_uri = f"http://localhost:{httpd.server_address[1]}"
+
+        # Generate the url
+        url = self.generate_login_url(
+                redirect_uri,
+                scope=scope
+            )
+
+        # Open the browser
+        webbrowser.open(
+            url[0]
+        )
+
+        # Say that we are awaiting response
+        print(f"Awaiting Response at http://localhost:{httpd.server_address[1]}")
+
+        # Wait until we have recieved the request
+        while not httpd.has_served:
+            try:
+                time.sleep(0.1)
+            except KeyboardInterrupt:
+                httpd.shutdown()
+                raise
+        # Shutdown
+        httpd.shutdown()
+
+        # Say that authentication detected
+        print("Authentication detected")
+
+        # Grab the query parameters
+        params = httpd.has_served
+
+        # Verify state
+        if params.get("state") != url[1]:
+            raise ValueError("States are not equal. This may mean a man in the middle attack")
+        
+        # Now request the token via authcode
+        token = self.authorization_code_request(
+            params.get("code"),
+            url[2],
+            redirect_uri
+        )
+        
+        # Now set the global token, and return
+        self.token = token
+
+        return token

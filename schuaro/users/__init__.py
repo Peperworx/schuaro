@@ -104,7 +104,7 @@ async def current_user(security_scopes: SecurityScopes, token: str = Depends(oau
 
 
 # Token route. OAuth token support
-@router.post("/token", response_model=global_classes.TokenPair, tags=["authentication"])
+@router.post("/token", response_model=global_classes.TokenResponse, tags=["authentication"])
 async def token_authentication(
     token_request: global_classes.OAuthTokenRequest = Depends(global_classes.OAuthTokenRequest.as_form), # This one took a lot of googling.
     request: Request = None):
