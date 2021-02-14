@@ -37,7 +37,7 @@ async def verify_user(username: str, password: str) -> global_classes.UserDB:
         Verifies a user based on username and password.
         Used mainly for OAuth password authentication
     """
-
+    
     # Parse the username into a username and a tag
     try:
         uname = username.split("#")[0]
