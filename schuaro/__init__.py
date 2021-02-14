@@ -1,5 +1,5 @@
 from schuaro import utilities
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Request, Form, HTTPException, status
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -60,7 +60,7 @@ async def login(request: Request):
 
 # We need a route for clients such as video games to use. We are not as worried about security on these
 @app.post("/login")
-async def login_post(request: Request, username: str = Form(...), password: str = Form(...)):
+async def login_post(request: Request, uname: str = Form(...), tag: str = Form(...), password: str = Form(...)):
     """
         Route for issuing password tokens to user
     """
@@ -74,7 +74,7 @@ async def login_post(request: Request, username: str = Form(...), password: str 
         grant_type = "password", # Password grant
         client_id = client_id, # Schuaro's client id
         client_secret = client_secret, # And Schuaro's client secret
-        username = username, # The username
+        username = f"{uname}#{tag}", # The username
         password = password, # The password
     )
     
