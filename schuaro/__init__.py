@@ -4,7 +4,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
-
+import base64
 import schuaro.users
 import schuaro.config
 import schuaro.party
@@ -60,10 +60,13 @@ async def login(request: Request):
 
 # We need a route for clients such as video games to use. We are not as worried about security on these
 @app.post("/login")
-async def login_post(request: Request, uname: str = Form(...), tag: str = Form(...), password: str = Form(...)):
+async def login_post(request: Request, 
+    username: str = Form(...), password: str = Form(...)
+    ):
     """
         Route for issuing password tokens to user
     """
+    
     
     # Grab our client details
     client_id = schuaro.config.settings.client_id
@@ -74,7 +77,7 @@ async def login_post(request: Request, uname: str = Form(...), tag: str = Form(.
         grant_type = "password", # Password grant
         client_id = client_id, # Schuaro's client id
         client_secret = client_secret, # And Schuaro's client secret
-        username = f"{uname}#{tag}", # The username
+        username = f"{username}", # The username
         password = password, # The password
     )
     
@@ -83,7 +86,7 @@ async def login_post(request: Request, uname: str = Form(...), tag: str = Form(.
         token_request,
         request
     )
-
+    
     # Return the tokens
     return tokens
 
