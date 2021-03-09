@@ -53,13 +53,13 @@ app.include_router(
 
 
 # Route for web login
-@app.get("/login")
+@app.get("/login", tags=["authentication"])
 async def login(request: Request):
     return templates.TemplateResponse("login.html",{"request":request})
 
 
 # We need a route for clients such as video games to use. We are not as worried about security on these
-@app.post("/login")
+@app.post("/login", tags=["authentication"])
 async def login_post(request: Request, 
     username: str = Form(...), password: str = Form(...)
     ):
