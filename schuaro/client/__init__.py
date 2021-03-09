@@ -77,7 +77,7 @@ class SchuaroClient:
 
         # Send the request
         req = requests.post(
-            f'{self.schuaro_uri}{"" if self.schuaro_uri.endswith("/") else "/"}users/token',
+            f'{self.schuaro_uri}{"" if self.schuaro_uri.endswith("/") else "/"}login/token',
             dict(post_data)
         )
 

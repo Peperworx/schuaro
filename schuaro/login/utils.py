@@ -8,7 +8,7 @@ from typing import Optional
 from schuaro import database
 
 # Get permissions information
-from schuaro.users import permissions
+from schuaro.login import permissions
 
 # Get configuration data
 from schuaro import config
@@ -50,8 +50,8 @@ async def verify_user(username: str, password: str) -> global_classes.UserDB:
     db = await database.get_db()
 
 
-    # Grab the users collection
-    col = db[f"{config.settings.col_prefix}-users"]
+    # Grab the login collection
+    col = db[f"{config.settings.col_prefix}-login"]
 
     # Find the user
     user = col.find_one(
@@ -252,7 +252,7 @@ async def get_user(username: str, tag: int) -> Optional[global_classes.UserDB]:
 
     # Retrive the database and the collection
     db = await database.get_db()
-    col = db[f"{config.settings.col_prefix}-users"]
+    col = db[f"{config.settings.col_prefix}-login"]
 
     # Get the user
     user = col.find_one(

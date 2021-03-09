@@ -122,7 +122,7 @@ def prompt_user():
         console.print("[red]Error[/red] username must be non empty")
         return prompt_user()
 
-    tag = Prompt.ask("Enter your users tag. This is an hexidecimal string")
+    tag = Prompt.ask("Enter your login tag. This is an hexidecimal string")
     m = re.match(r"[0-9A-Fa-f]+", tag)
     if m:
         pass
@@ -142,11 +142,11 @@ def prompt_user():
 # Prompt for username and password
 u,p,t = prompt_user()
 
-from schuaro.users import permissions
+from schuaro.login import permissions
 
 # Create the collection for a user
 with console.status("Creating initial user"):
-    col = db[f"{collection_prefix}-users"]
+    col = db[f"{collection_prefix}-login"]
 
     # Remove all documents
     col.delete_many({})

@@ -1,6 +1,6 @@
 from schuaro.utilities import global_classes
 from schuaro.clients import utils as client_utils
-from schuaro.users import utils as user_utils
+from schuaro.login import utils as user_utils
 from fastapi import (
     Request,
     status,

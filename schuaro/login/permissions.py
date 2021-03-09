@@ -1,6 +1,6 @@
 scopes = {
     "me": "Permission to access self data",
-    "user:read":"Permission to read other public users",
+    "user:read":"Permission to read other public login",
     "ability:friends":"The ability to add and remove friends from self",
     "ability:party":"The ability to create and accept party invitations",
     "ability:match_request":"The ability to create matchmaking requests",

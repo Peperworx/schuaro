@@ -17,23 +17,23 @@ from fastapi.security import (
 )
 
 
-from schuaro.users import permissions
+from schuaro.login import permissions
 
 # Global data
 from schuaro.utilities import global_classes as global_classes
 
 # Grants
-from schuaro.users import grants
+from schuaro.login import grants
 
 # User utilities
-from schuaro.users import utils as user_utils
+from schuaro.login import utils as user_utils
 
 # Authcode stuff
-from schuaro.users import authcode
+from schuaro.login import authcode
 
 # Get the router ready
 router = APIRouter(
-    prefix="/users",
+    prefix="/login",
     
 )
 

@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 import base64
-import schuaro.users
+import schuaro.login
 import schuaro.config
 import schuaro.party
 import schuaro.config
@@ -41,9 +41,9 @@ app.add_middleware(
 )
 
 
-# Router for users
+# Router for login
 app.include_router(
-    schuaro.users.router
+    schuaro.login.router
 )
 
 # Router for party
@@ -82,7 +82,7 @@ async def login_post(request: Request,
     )
     
     # Fake the request by calling the grant function
-    tokens = await schuaro.users.grants.password(
+    tokens = await schuaro.login.grants.password(
         token_request,
         request
     )

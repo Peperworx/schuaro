@@ -3117,7 +3117,7 @@
 
                                     this.id = null; // emit close event
 
-                                    this.emit("close", reason, desc); // clean buffers after, so users can still
+                                    this.emit("close", reason, desc); // clean buffers after, so login can still
                                     // grab the buffers on `close` event
 
                                     self.writeBuffer = [];

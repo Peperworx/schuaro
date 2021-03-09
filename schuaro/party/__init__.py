@@ -7,8 +7,8 @@ from fastapi import (
 # Global stuff
 from schuaro.utilities import global_classes
 
-# Users stuff
-from schuaro.users import current_user
+# login stuff
+from schuaro.login import current_user
 
 # Prep router
 router = APIRouter(
