@@ -12,7 +12,7 @@ from rich.console import Console
 import hashlib
 import pymongo
 
-from schuaro.users import permissions
+
 
 console = Console()
 mconnstring = None
@@ -71,7 +71,7 @@ mongo = request_mongodb()
 database_name = Prompt.ask("Please enter the name for the database that schuaro will use", default="schuaro")
 
 # Request the collection prefix
-collection_prefix = Prompt.ask("Please enter the prefix for collections in the database", default="myschuaro")
+collection_prefix = Prompt.ask("Please enter the prefix for collections in the database", default="schuaro")
 
 confirm = True
 database_exists = False
@@ -87,8 +87,33 @@ if database_name in mongo.list_database_names():
 if not confirm:
     sys.exit()
 
+
+
 # Get the database
 db = mongo[database_name]
+
+# Generate initial internal client details
+init_client_id = hex(secrets.randbits(256))[2:]
+init_client_secret = hex(secrets.randbits(256))[2:]
+
+# Generate the clientid for the login client
+login_client_id = hex(secrets.randbits(256))[2:]
+
+# Create the env file
+envData = {
+    "SECRET":hex(secrets.randbits(256))[2:],
+    "MONGO_CONNSTRING":mconnstring,
+    "DB_NAME":database_name,
+    "COL_PREFIX": collection_prefix,
+    "CLIENT_ID":init_client_id,
+    "CLIENT_SECRET": init_client_secret,
+    "LOGIN_CLIENT_ID": login_client_id
+}
+
+with open(os.path.join(os.path.dirname(__file__),".env"),"w+") as f:
+    f.write("\n".join([f"{k}={v}" for k,v in envData.items()]))
+
+console.print("[green]Generated .env[/green]")
 
 def prompt_user():
     username = Prompt.ask("Enter what you want your initial administrator username to be")
@@ -117,6 +142,7 @@ def prompt_user():
 # Prompt for username and password
 u,p,t = prompt_user()
 
+from schuaro.users import permissions
 
 # Create the collection for a user
 with console.status("Creating initial user"):
@@ -157,12 +183,8 @@ with console.status("Creating reserved prefixes"):
             "reason":0
         })
 
-# Generate initial internal client details
-init_client_id = hex(secrets.randbits(256))[2:]
-init_client_secret = hex(secrets.randbits(256))[2:]
 
-# Generate the clientid for the login client
-login_client_id = hex(secrets.randbits(256))[2:]
+
 
 col = db[f"{collection_prefix}-clients"]
 
@@ -188,20 +210,7 @@ with console.status("Creating login client"):
 
 console.print("[green]Setup Successful[/green]")
 
-envData = {
-    "SECRET":hex(secrets.randbits(256))[2:],
-    "MONGO_CONNSTRING":mconnstring,
-    "DB_NAME":database_name,
-    "COL_PREFIX": collection_prefix,
-    "CLIENT_ID":init_client_id,
-    "CLIENT_SECRET": init_client_secret,
-    "LOGIN_CLIENT_ID": login_client_id
-}
 
-with open(os.path.join(os.path.dirname(__file__),".env"),"w+") as f:
-    f.write("\n".join([f"{k}={v}" for k,v in envData.items()]))
-
-console.print("[green]Generated .env[/green]")
 
 console.print(f"[yellow]NOTICE[/yellow] Save the following values somewhere safe.")
 console.print(f"Keep them safe, keep them secret.")
