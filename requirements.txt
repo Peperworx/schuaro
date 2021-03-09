@@ -9,5 +9,4 @@ uvicorn
 requests
 rich
 redis
-graphene
-graphene-pydantic
+strawberry-graphql[debug-server]

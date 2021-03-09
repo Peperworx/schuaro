@@ -51,29 +51,4 @@ class DB_User(pydantic.BaseModel):
     # to other users
     public: bool
 
-class User(pydantic.BaseModel):
-    """
-        Represents a user outside of the database
-    """
 
-    # These are the username and the tag.
-    # The full username is a combination of username and tag
-    # where username#hexidecimal_tag
-    # This system allows users to have the name they want,
-    # and allows duplicate names without conflicts.
-    username: str
-    tag: int
-
-    # Email is actually used to log in, instead of username/tag
-    # This is easier to remember than username#tag
-    email: str
-
-
-    # The active boolean describes whether the user is active or not.
-    # Non active users may not login until a password reset or an email
-    # verification is sent
-    active: bool
-
-    # The public boolean dictates whether or not the user wants to be visible
-    # to other users
-    public: bool
