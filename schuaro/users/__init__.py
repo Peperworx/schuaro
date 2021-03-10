@@ -27,15 +27,13 @@ class User:
 @strawberry.type
 class Query:
     @strawberry.field
-    async def user(self, email: str) -> User:
-        data = {
-            "username":"test",
-            "tag":0xF00D,
-            "email":"admin@peperworx.com",
-            "active":True,
-            "public":True
-        }
-        return User(**data)
+    async def user(self, token: str, email: str) -> User:
+
+        # Get the user
+        user = await data.find_user_email(email)
+
+        # Return the user
+        return User(**user.dict(exclude={"password","session_id","permissions"}))
 
 schema = strawberry.Schema(query=Query)
 

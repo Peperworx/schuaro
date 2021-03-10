@@ -4,3 +4,6 @@
 
 class UserNotFound(Exception):
     pass
+
+class ClientNotFound(Exception):
+    pass
