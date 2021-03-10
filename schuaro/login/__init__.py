@@ -3,7 +3,7 @@
 """
 
 # Fastapi
-from fastapi import APIRouter, Request, Depends, Response, status
+from fastapi import APIRouter, Request, Depends, Response, status, HTTPException
 
 # Jinja2 stuff
 from fastapi.templating import Jinja2Templates
@@ -13,6 +13,12 @@ from schuaro.data import rep
 
 # Authcode login
 from schuaro.login import authcode
+
+# Urllib parse
+import urllib.parse
+
+# Error
+from schuaro.errors import *
 
 
 # Ready the api router
@@ -46,19 +52,28 @@ async def login(
     """
     
     # Get the authcode
-    ret = authcode.authenticate(login_request)
-    print(ret)
-
+    try:
+        code = await authcode.authenticate(login_request)
+    except SchuaroException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail=str(e))
+    # Generate the data
+    redirect_data = {
+        "code": code,
+        "state": login_request.state
+    }
 
     # Redirect
-    #response.status_code = status.HTTP_303_SEE_OTHER
-    #response.headers["Location"] = ret
+    redirect_url = f"{login_request.redirect_uri}?{urllib.parse.urlencode(redirect_data)}"
+    
+    response.status_code = status.HTTP_303_SEE_OTHER
+    response.headers["Location"] = redirect_url
     
     return {}
 
 # Oauth2 Route
 @router.post("/oauth2")
 async def oauth2(
+    request: Request,
     login_data: rep.OAuthTokenRequest = Depends(rep.OAuthTokenRequest.as_form)
 ):
     """
@@ -67,9 +82,11 @@ async def oauth2(
     """
     
 
-    print(login_data)
+    # Grab the grand type
+    grant = login_data.grant_type
 
-
-    return login_data
+    # Switch on the grant
+    if grant == "authorization_code":
+        return await authcode.grant(login_data, request)
 
 

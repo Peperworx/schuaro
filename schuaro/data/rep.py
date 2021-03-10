@@ -122,3 +122,70 @@ class LoginRequest(pydantic.BaseModel):
 
     # The code challeng method
     code_challenge_method: str
+
+
+class DB_Client(pydantic.BaseModel):
+    """
+        Represents a client in the database
+    """
+
+    # The client id
+    client_id: str
+
+    # The client secret
+    client_secret: str
+
+    # The permissions
+    permissions: list[str]
+
+
+class AuthCode(pydantic.BaseModel):
+    """
+        Represents an authcode
+    """
+
+    # Username
+    username: str
+
+    # Email
+    email: str
+
+    # Tag
+    tag: int
+
+    # Scopes
+    scopes: list[str]
+
+    # Expiry
+    expires: int
+
+    # Session id
+    session_id: int
+
+    # Redirect uri
+    redirect_uri: str
+
+    # code challenge and method
+    code_challenge: str
+    code_challenge_method: str
+
+
+class TokenResponse(pydantic.BaseModel):
+    """
+        Models a token response for a token endpoint
+    """
+
+    # The type of token
+    token_type: str
+
+    # The number of seconds that it will expire in
+    expires: int
+
+    # The access token
+    access_token: str
+    
+    # The scope
+    scope: str 
+
+    # The refresh token
+    refresh_token: str 

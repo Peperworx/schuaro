@@ -2,8 +2,20 @@
     Errors and exceptions for schuaro
 """
 
-class UserNotFound(Exception):
+class SchuaroException(Exception):
     pass
 
-class ClientNotFound(Exception):
+class UserNotFound(SchuaroException):
+    pass
+
+class ClientNotFound(SchuaroException):
+    pass
+
+class ClientInvalid(SchuaroException):
+    pass
+
+class UserInvalid(SchuaroException):
+    pass
+
+class AuthcodeError(SchuaroException):
     pass
