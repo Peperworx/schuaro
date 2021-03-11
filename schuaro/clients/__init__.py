@@ -19,7 +19,7 @@ from schuaro.errors import *
 import hashlib
 
 
-async def verify_client_scopes(client: rep.DB_Client, scope: list[str] = []):
+async def verify_client_scopes(client: rep.DB_Client, scope: list[str] = []) -> bool:
     """
         Verifies a client. Raises an error if there is something wrong.
     """
@@ -29,4 +29,19 @@ async def verify_client_scopes(client: rep.DB_Client, scope: list[str] = []):
         if f"issue:{s}" not in client.permissions:
             raise ClientInvalid(f"Scope {s} not given to client")
 
+    return True
+
+async def verify_client(client: rep.DB_Client, secret: str, scope: list[str] = []) -> bool:
+    """
+        Verifies a client. Raises an error if there is something wrong.
+    """
+
+    if hashlib.sha256(secret.encode()).hexdigest().lower() != client.client_secret.lower():
+        raise ClientInvalid(f"Client Secret invalid")
+
+    # Verify the client scopes
+    for s in scope:
+        if f"issue:{s}" not in client.permissions:
+            raise ClientInvalid(f"Scope {s} not given to client")
+    
     return True

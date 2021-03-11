@@ -189,3 +189,15 @@ class TokenResponse(pydantic.BaseModel):
 
     # The refresh token
     refresh_token: str 
+
+
+class ClientAuthenticatio(pydantic.BaseModel):
+    """
+        Represents a client secret and an id
+    """
+
+    # The client ID
+    client_id: str
+
+    # The client Secret
+    client_secret: str

@@ -3,8 +3,11 @@
 """
 
 # Data representations
-from schuaro.errors import AuthcodeError
 from schuaro.data import rep
+
+# Errors
+from schuaro.errors import AuthcodeError, ClientInvalid
+from fastapi import HTTPException, status
 
 # Database stuff
 import schuaro.data as data
@@ -38,7 +41,7 @@ from fastapi import Request
 # Configuration
 from schuaro import config
 
-async def validate_authcode(token: rep.AuthCode, code_verifier: Optional[str] = None):
+async def validate_authcode(token: rep.AuthCode, code_verifier: Optional[str] = None) -> bool:
     """
         Validates an authcode.
     """
@@ -107,7 +110,7 @@ async def create_authcode(
     user: rep.DB_User, 
     login_request: rep.LoginRequest,
     ttl: int,
-    scopes: list[str]):
+    scopes: list[str]) -> str:
     """
         Creates and returns an authcode
     """
@@ -141,7 +144,7 @@ async def create_authcode(
     # Return
     return authcode
 
-async def authenticate(login_request: rep.LoginRequest):
+async def authenticate(login_request: rep.LoginRequest) -> str:
     """
         Generates an authcode authentication token
     """
@@ -177,8 +180,124 @@ async def authenticate(login_request: rep.LoginRequest):
     # Return
     return authcode
 
-async def password(token_request: rep.OAuthTokenRequest, request: Request) -> rep.TokenResponse:
+async def extract_client(token_request: rep.OAuthTokenRequest, request: Request) -> rep.ClientAuthenticatio:
     """
-        Grant for password login.
+        Extracts the details of the client from both the request and the headers.
     """
-    pass
+    # Check for client id and secret in token_request
+    # They will be none if not provided
+    client_id = token_request.client_id
+    client_secret = token_request.client_secret
+
+    # Now Check for client id and secret in basic auth header
+    try:
+        if not client_id or not client_secret:
+            authHeader = base64.b64decode(request.headers["authorization"].split(" ")[1])
+            client_id, client_secret = [a.decode() for a in authHeader.split(b":")]
+    except:
+        raise ClientInvalid("Client Not Found in Request")
+    
+    if not client_id or not client_secret:
+        raise ClientInvalid("Client Not Found in Request")
+
+    # If it exists, we will have reached this point
+    # Lets create the return structure and return
+    return rep.ClientAuthentication(
+        client_id=client_id,
+        client_secret=client_secret
+    )
+
+async def authorization_code(token_request: rep.OAuthTokenRequest, request: Request) -> rep.TokenResponse:
+    """
+        Grant for OAuth2 Authorization Code login.
+    """
+    try:
+        # Retrieve details of the client
+        client_details = await extract_client(token_request,request)
+    except:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="no_client_details",
+            headers={
+                "WWW-Authenticate": f"Bearer{f' scope={token_request.scope}' if len(scopes) > 0 else ''}"
+            }
+        )
+    
+
+    # Retrive scope details
+    scopes = util.get_scopes(token_request.scopes)
+    
+    
+    # Get the client
+    client = data.find_client(client_details.client_id)
+
+    # Verify the client
+    try:
+        await client_utils.verify_client(client, client_details.client_secret, scopes)
+    except:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="client_credentials_incorrect",
+            headers={
+                "WWW-Authenticate": f"Bearer{f' scope={token_request.scope}' if len(scopes) > 0 else ''}"
+            }
+        )
+    
+    
+    
+    # NOTE Any clients can authorize users
+    
+    # NOTE Above validation already checks scopes
+    
+    # Decode the authcode
+    authcode = await decode_authcode(token_request.code,token_request.code_verifier)
+    
+    # Check if authcode is valid, failing if not
+    if not authcode:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="authcode_invalid",
+                headers={
+                    "WWW-Authenticate":
+                        f"Bearer{f' scope={token_request.scope}' if len(scopes) > 0 else ''}"
+                }
+        )
+    
+    # Verify the authcodes redirect_uri
+    if authcode.redirect_uri != token_request.redirect_uri:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="authcode_invalid_redirect",
+                headers={
+                    "WWW-Authenticate":
+                        f"Bearer{f' scope={token_request.scope}' if len(scopes) > 0 else ''}"
+                }
+        )
+
+    # Now we know the authcode is valid.
+
+    
+    # Timetolive of 30 mins
+    ttl = 30
+
+    # Lets issue a token
+    issued_tokens = await user_utils.issue_token_pair(
+        await user_utils.get_user(
+            authcode.username,
+            authcode.tag
+        ),
+        ttl=ttl,
+        scopes=authcode.scopes
+    )
+    
+    # Generate the response
+    ret = {
+        "token_type":"bearer",
+        "expires":ttl*60, # How many seconds till expiry
+        "access_token":issued_tokens.access_token,
+        "scope": " ".join(scopes), # The scopes
+        "refresh_token":issued_tokens.refresh_token # The refresh token
+    }
+    
+    # Load into model and return
+    return rep.TokenResponse(**ret)
