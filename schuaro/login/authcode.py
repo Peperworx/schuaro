@@ -250,36 +250,17 @@ async def authorization_code(token_request: rep.OAuthTokenRequest, request: Requ
     # NOTE Above validation already checks scopes
     
     # Decode the authcode
-    authcode = await decode_authcode(token_request.code,token_request.code_verifier)
+    """
+    authcode = await decode_authcode(token_request.code)
     
-    # Check if authcode is valid, failing if not
-    if not authcode:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="authcode_invalid",
-                headers={
-                    "WWW-Authenticate":
-                        f"Bearer{f' scope={token_request.scope}' if len(scopes) > 0 else ''}"
-                }
-        )
     
-    # Verify the authcodes redirect_uri
-    if authcode.redirect_uri != token_request.redirect_uri:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="authcode_invalid_redirect",
-                headers={
-                    "WWW-Authenticate":
-                        f"Bearer{f' scope={token_request.scope}' if len(scopes) > 0 else ''}"
-                }
-        )
 
     # Now we know the authcode is valid.
 
     
     # Timetolive of 30 mins
     ttl = 30
-
+    
     # Lets issue a token
     issued_tokens = await user_utils.issue_token_pair(
         await user_utils.get_user(
@@ -298,6 +279,7 @@ async def authorization_code(token_request: rep.OAuthTokenRequest, request: Requ
         "scope": " ".join(scopes), # The scopes
         "refresh_token":issued_tokens.refresh_token # The refresh token
     }
+    """
     
     # Load into model and return
-    return rep.TokenResponse(**ret)
+    return rep.TokenResponse()

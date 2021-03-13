@@ -1,0 +1,13 @@
+version: "3.9"
+services:
+  schuaro:
+    image: "schuaro:latest"
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/code
+    container_name: "schuaro"
+    environment:
+      schuaro_dev: "True"
+    env_file: "./.env"
