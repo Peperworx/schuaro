@@ -10,4 +10,21 @@ services:
     container_name: "schuaro"
     environment:
       schuaro_dev: "True"
+      redis_host: "redis"
+      mongo_host: "mongodb"
     env_file: "./.env"
+  redis:
+    image: "redis"
+    hostname: redis
+  mongodb:
+    image: mongo
+    ports:
+      - 27017:27017
+    volumes:
+      - type: volume
+        source: mongodb_data_volume
+        target: /data/db
+    hostname: mongo
+volumes:
+  mongodb_data_volume:
+    external: true

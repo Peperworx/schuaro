@@ -280,6 +280,5 @@ async def authorization_code(token_request: rep.OAuthTokenRequest, request: Requ
         "refresh_token":issued_tokens.refresh_token # The refresh token
     }
     """
-    
     # Load into model and return
     return rep.TokenResponse()
