@@ -1,25 +1,25 @@
-version: "3.9"
+version: '3.9'
 services:
   schuaro:
-    image: "schuaro:latest"
+    image: 'schuaro:latest'
     build: .
     ports:
-      - "8000:8000"
+      - '8000:8000'
     volumes:
-      - .:/code
-    container_name: "schuaro"
+      - '.:/code'
+    container_name: schuaro
     environment:
-      schuaro_dev: "True"
-      redis_host: "redis"
-      mongo_host: "mongodb"
-    env_file: "./.env"
+      schuaro_dev: 'True'
+      redis_host: redis
+      mongo_host: mongodb
+    env_file: ./.env
   redis:
-    image: "redis"
+    image: redis
     hostname: redis
   mongodb:
     image: mongo
     ports:
-      - 27017:27017
+      - '27017:27017'
     volumes:
       - type: volume
         source: mongodb_data_volume
