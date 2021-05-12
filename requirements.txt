@@ -9,4 +9,5 @@ uvicorn
 requests
 rich
 redis
+pyyaml
 strawberry-graphql[debug-server]

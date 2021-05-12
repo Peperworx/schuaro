@@ -12,7 +12,6 @@ services:
       schuaro_dev: 'True'
       redis_host: redis
       mongo_host: mongodb
-    env_file: ./.env
   redis:
     image: redis
     hostname: redis
