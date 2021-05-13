@@ -141,3 +141,5 @@ cython_debug/
 config.yml
 
 .vscode
+
+*.pem
