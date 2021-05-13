@@ -1,16 +1,17 @@
+# Grab FastAPI class
+from schuaro.error import ConfigurationInvalidError
+from fastapi import FastAPI
 
-# Fastapi Core
-from fastapi import FastAPI, Depends
-from fastapi.staticfiles import StaticFiles
-
-# Schuaro routes
-import schuaro.users
-import schuaro.login
-
-# Login scheme
-from schuaro.login import scheme
+# Schuaro imports
+from schuaro import config
 
 
+# Redis
+import redis
+
+# Secrets
+import secrets
+import hashlib
 
 # Metadata for tags
 tags_metadata = [
@@ -24,20 +25,40 @@ app = FastAPI(
     },
     openapi_tags = tags_metadata
 )
-# Static files
-app.mount("/static",StaticFiles(directory="static"),name="static")
 
+@app.on_event("startup")
+async def startup():
+    """
+        Prepare the application
+    """
 
+    # Get the local configuration
+    conf = config.read_local_configuration()
 
-# Mount users graphql
-app.mount("/users",schuaro.users.router)
+    # Attempt to connect to redis
+    try:
+        rpool = redis.ConnectionPool(
+            host=conf["redis_host"],
+            port=conf["redis_port"],
+        )
+        # Create a dummy connection
+        #r = redis.Redis(connection_pool=rpool)
 
-# Login Router
-app.include_router(
-    schuaro.login.router
-)
+        # Generate two random values
+        ra = hashlib.sha256(secrets.randbits(2048).to_bytes(256,"little")).hexdigest()
+        rb = hashlib.sha256(secrets.randbits(2048).to_bytes(256,"little")).hexdigest()
+        # Attempt to set ker ra to value rb
+        #r.set(ra,rb)
 
-# Basic / url
-@app.get("/")
-async def read_items(token: str = Depends(scheme.oauth2_scheme)):
-    return {"token": token}
+        # Try to get it
+        #rg = r.get(ra)
+
+        # And delete it
+        #r.delete(ra)
+    except IndexError as e:
+        raise ConfigurationInvalidError("Configuration file missing one key of {redis_host, redis_port}")
+    except redis.exceptions.ConnectionError:
+        raise ConfigurationInvalidError(f"Unable to connect to redis at address {conf['redis_host']}:{conf['redis_port']}")
+    
+
+    
