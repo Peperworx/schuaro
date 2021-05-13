@@ -1,5 +1,0 @@
-certfile = "certfile.pem"
-keyfile = "keyfile.pem"
-quic_bind = "localhost:4433"
-bind = "localhost:443"
-insecure_bind = "localhost:80"

@@ -4,14 +4,15 @@ from fastapi import FastAPI
 
 # Schuaro imports
 from schuaro import config
-
+from schuaro.data import redis as dredis
 
 # Redis
 import redis
 
-# Secrets
-import secrets
-import hashlib
+# Socket for hostname discovery
+import socket
+
+
 
 # Metadata for tags
 tags_metadata = [
@@ -42,26 +43,12 @@ async def startup():
             port=conf["redis_port"],
         )
         # Create a dummy connection
-        r = redis.Redis(connection_pool=rpool)
-
-        # Generate two random values
-        ra = hashlib.sha256(secrets.randbits(2048).to_bytes(256,"little")).hexdigest()
-        rb = hashlib.sha256(secrets.randbits(2048).to_bytes(256,"little")).hexdigest()
-        # Attempt to set ker ra to value rb
-        r.set(ra,rb)
-
-        # Try to get it
-        rg = r.get(ra)
-
-        # And delete it
-        r.delete(ra)
-
-        # And close it
-        r.close()
+        r = await dredis.try_connect(
+            host=conf["redis_host"],
+            port=conf["redis_port"],
+            connection_pool=rpool)
     except IndexError as e:
         raise ConfigurationInvalidError("Configuration file missing one key of {redis_host, redis_port}")
-    except redis.exceptions.ConnectionError:
-        raise ConfigurationInvalidError(f"Unable to connect to redis at address {conf['redis_host']}:{conf['redis_port']}")
     
 
     

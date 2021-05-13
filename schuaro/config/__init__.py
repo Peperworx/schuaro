@@ -3,7 +3,7 @@ from schuaro.error import *
 
 import yaml
 
-def read_local_configuration(conf_file: str = "config.yml"):
+def read_local_configuration(conf_file: str = "config/config.yml"):
     """
         Loads the local configuration file.
     """

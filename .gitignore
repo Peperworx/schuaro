@@ -143,3 +143,7 @@ config.yml
 .vscode
 
 *.pem
+
+keys/
+
+logs/

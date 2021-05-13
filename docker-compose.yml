@@ -1,5 +1,19 @@
 version: '3.9'
 services:
+  redis:
+    image: redis
+    hostname: redis
+    ports:
+      - '6379:6379'
+  mongodb:
+    image: mongo
+    ports:
+      - '27017:27017'
+    volumes:
+      - type: volume
+        source: mongodb_data_volume
+        target: /data/db
+    hostname: mongo
   schuaro:
     image: 'schuaro:latest'
     build: .
@@ -14,18 +28,8 @@ services:
       schuaro_dev: 'True'
       redis_host: redis
       mongo_host: mongodb
-  redis:
-    image: redis
-    hostname: redis
-  mongodb:
-    image: mongo
-    ports:
-      - '27017:27017'
-    volumes:
-      - type: volume
-        source: mongodb_data_volume
-        target: /data/db
-    hostname: mongo
+
+  
 volumes:
   mongodb_data_volume:
     external: true
