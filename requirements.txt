@@ -5,7 +5,7 @@ pymongo
 python-jose
 python-multipart
 jinja2
-uvicorn
+hypercorn[h3]
 requests
 rich
 redis
