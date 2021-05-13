@@ -42,19 +42,22 @@ async def startup():
             port=conf["redis_port"],
         )
         # Create a dummy connection
-        #r = redis.Redis(connection_pool=rpool)
+        r = redis.Redis(connection_pool=rpool)
 
         # Generate two random values
         ra = hashlib.sha256(secrets.randbits(2048).to_bytes(256,"little")).hexdigest()
         rb = hashlib.sha256(secrets.randbits(2048).to_bytes(256,"little")).hexdigest()
         # Attempt to set ker ra to value rb
-        #r.set(ra,rb)
+        r.set(ra,rb)
 
         # Try to get it
-        #rg = r.get(ra)
+        rg = r.get(ra)
 
         # And delete it
-        #r.delete(ra)
+        r.delete(ra)
+
+        # And close it
+        r.close()
     except IndexError as e:
         raise ConfigurationInvalidError("Configuration file missing one key of {redis_host, redis_port}")
     except redis.exceptions.ConnectionError:

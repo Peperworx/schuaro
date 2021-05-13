@@ -6,9 +6,18 @@ spec:
   selector:
     app: schuaro
   ports:
-  - protocol: "TCP"
-    port: 8000
-    targetPort: 8000
+  - protocol: TCP
+    name: http
+    port: 80
+    targetPort: 80
+  - protocol: TCP
+    name: https
+    port: 443
+    targetPort: 443
+  - protocol: UDP
+    name: quic
+    port: 4433
+    targetPort: 4433
   type: LoadBalancer
 
 ---
@@ -31,4 +40,10 @@ spec:
         image: schuaro:latest
         imagePullPolicy: Never
         ports:
-        - containerPort: 8000
+        - containerPort: 80
+          protocol: TCP
+        - containerPort: 443
+          protocol: TCP
+        - containerPort: 4433
+          protocol: UDP
+      
