@@ -29,7 +29,7 @@ async def try_connect(host: str = "localhost" , port: int = 6379, password: Opti
         
         # Attempt to send
         try:
-            r.publish("testpub","none")
+            r.publish("testpub",'{"type":"ignore"}')
             return r
         except redis.exceptions.ConnectionError:
             time.sleep(delay)
