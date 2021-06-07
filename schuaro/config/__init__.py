@@ -41,19 +41,35 @@ class ConfigLoader:
         # Validate configuration
         self.config = ConfigSchema(**config)
 
+    async def connect_redis(self):
+        """
+            Connects to redis and returns a redis connection object.
+        """
         # Try Connect to redis
-        self.redis = await dredis.try_connect(
+        redis = await dredis.try_connect(
             self.config.redis_url.host,
             self.config.redis_url.port,
         )
 
+        # Return
+        return redis
+
+    
+    async def retrieve_db(self):
+        """
+            Returns a DbManager instance.
+        """
+
         # Create database manager
         database = databases.Database(str(self.config.database_uri))
-        self.db = DbManager(database)
+        db = DbManager(database)
 
         # Attempt connect/disconnect
         await database.connect()
         await database.disconnect()
+
+        # Return
+        return db
 
 
     

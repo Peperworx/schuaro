@@ -13,6 +13,8 @@ pymongo = "^3.11.4"
 PyYAML = "^5.4.1"
 databases = {extras = ["sqlite", "mysql", "postgresql"], version = "^0.4.3"}
 aiosqlite = "^0.17.0"
+justredis = "^0.0.1-alpha.3"
+PyJWT = "^2.1.0"
 
 [tool.poetry.dev-dependencies]
 

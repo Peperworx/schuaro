@@ -184,6 +184,14 @@ optional = false
 python-versions = ">=3.6.1"
 
 [[package]]
+name = "justredis"
+version = "0.0.1a3"
+description = "A Redis client for Python supporting many Redis features and Python synchronous (Python 3.5+) and asynchronous (Python 3.6+) communication."
+category = "main"
+optional = false
+python-versions = ">=3.5"
+
+[[package]]
 name = "priority"
 version = "1.3.0"
 description = "A pure-Python implementation of the HTTP/2 priority tree"
@@ -213,6 +221,20 @@ typing-extensions = ">=3.7.4.3"
 [package.extras]
 dotenv = ["python-dotenv (>=0.10.4)"]
 email = ["email-validator (>=1.0.3)"]
+
+[[package]]
+name = "pyjwt"
+version = "2.1.0"
+description = "JSON Web Token implementation in Python"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.extras]
+crypto = ["cryptography (>=3.3.1,<4.0.0)"]
+dev = ["sphinx", "sphinx-rtd-theme", "zope.interface", "cryptography (>=3.3.1,<4.0.0)", "pytest (>=6.0.0,<7.0.0)", "coverage[toml] (==5.0.4)", "mypy", "pre-commit"]
+docs = ["sphinx", "sphinx-rtd-theme", "zope.interface"]
+tests = ["pytest (>=6.0.0,<7.0.0)", "coverage[toml] (==5.0.4)"]
 
 [[package]]
 name = "pylsqpack"
@@ -331,7 +353,7 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "258827aaa80aae005974e8ad48ac1f8738634de51746888afb8aa963bd2b6038"
+content-hash = "2f0b5abcb866fc70abc3e9fdb25c1f698ac75ab4f9ee4c3c9a896fc1bff96030"
 
 [metadata.files]
 aiomysql = [
@@ -489,6 +511,10 @@ hyperframe = [
     {file = "hyperframe-6.0.1-py3-none-any.whl", hash = "sha256:0ec6bafd80d8ad2195c4f03aacba3a8265e57bc4cff261e802bf39970ed02a15"},
     {file = "hyperframe-6.0.1.tar.gz", hash = "sha256:ae510046231dc8e9ecb1a6586f63d2347bf4c8905914aa84ba585ae85f28a914"},
 ]
+justredis = [
+    {file = "justredis-0.0.1a3-py3-none-any.whl", hash = "sha256:61f2b531bf6c315d3bf7f41ddf0c14731f643d31691a505f90a419601bde713f"},
+    {file = "justredis-0.0.1a3.tar.gz", hash = "sha256:0be9f01d60b4cae0b40d9e643262d17bddfc33bead93d3f32d4cefb10026fd49"},
+]
 priority = [
     {file = "priority-1.3.0-py2.py3-none-any.whl", hash = "sha256:be4fcb94b5e37cdeb40af5533afe6dd603bd665fe9c8b3052610fc1001d5d1eb"},
     {file = "priority-1.3.0.tar.gz", hash = "sha256:6bc1961a6d7fcacbfc337769f1a382c8e746566aaa365e78047abe9f66b2ffbe"},
@@ -520,6 +546,10 @@ pydantic = [
     {file = "pydantic-1.8.2-cp39-cp39-win_amd64.whl", hash = "sha256:4be75bebf676a5f0f87937c6ddb061fa39cbea067240d98e298508c1bda6f3f3"},
     {file = "pydantic-1.8.2-py3-none-any.whl", hash = "sha256:fec866a0b59f372b7e776f2d7308511784dace622e0992a0b59ea3ccee0ae833"},
     {file = "pydantic-1.8.2.tar.gz", hash = "sha256:26464e57ccaafe72b7ad156fdaa4e9b9ef051f69e175dbbb463283000c05ab7b"},
+]
+pyjwt = [
+    {file = "PyJWT-2.1.0-py3-none-any.whl", hash = "sha256:934d73fbba91b0483d3857d1aff50e96b2a892384ee2c17417ed3203f173fca1"},
+    {file = "PyJWT-2.1.0.tar.gz", hash = "sha256:fba44e7898bbca160a2b2b501f492824fc8382485d3a6f11ba5d0c1937ce6130"},
 ]
 pylsqpack = [
     {file = "pylsqpack-0.3.12-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:e241a7aba613b74d676791b8ea3f03366a406c1d950d1aac65f6c75852175fea"},
