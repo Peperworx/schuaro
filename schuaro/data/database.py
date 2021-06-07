@@ -1,18 +1,18 @@
 import sqlalchemy
+import databases
 
 
-
-class Tables:
+class DbManager:
     """
-        Class containing all database table schemas
+        Class for managing the database
     """
 
     users: sqlalchemy.Table
     clients: sqlalchemy.Table
 
-    def __init__(self):
+    def __init__(self, database: databases.Database):
         """
-            Class containing all database table schemas
+            Class for managing the database
         """
 
         # Metadata
@@ -31,10 +31,23 @@ class Tables:
 
         # Initialize clients table
         self.clients = sqlalchemy.Table(
-            "clientss",
+            "clients",
             self.metadata,
             sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
             sqlalchemy.Column("clientid", sqlalchemy.String),
             sqlalchemy.Column("clientsecret", sqlalchemy.String),
             sqlalchemy.Column("scope", sqlalchemy.String),
         )
+
+        self.database = database
+
+        # Create engine and create_all
+        self.engine = sqlalchemy.create_engine(
+            str(database.url), connect_args={"check_same_thread": False}
+        )
+
+        self.metadata.create_all(self.engine)
+
+    
+
+        

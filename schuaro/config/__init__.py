@@ -1,11 +1,12 @@
 import pydantic
-import enum
 from pydantic import (
     RedisDsn,
     AnyUrl
 )
+import databases
 
 from schuaro.data import redis as dredis
+from schuaro.data.database import *
 
 
 
@@ -21,7 +22,7 @@ class ConfigSchema(pydantic.BaseModel):
     redis_url: RedisDsn
 
     # Database URI. Can be mysql, sqlite, postgresql
-    database_uri: AnyUrl
+    database_uri: str
 
 class ConfigLoader:
     """
@@ -46,7 +47,13 @@ class ConfigLoader:
             self.config.redis_url.port,
         )
 
-        # Try Connect to database
-        print(self.config)
+        # Create database manager
+        database = databases.Database(str(self.config.database_uri))
+        self.db = DbManager(database)
+
+        # Attempt connect/disconnect
+        await database.connect()
+        await database.disconnect()
+
 
     

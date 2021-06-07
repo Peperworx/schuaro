@@ -7,9 +7,8 @@ import yaml
 import os
 
 
-
-
 app = FastAPI()
+
 
 
 @app.on_event("startup")

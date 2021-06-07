@@ -1,7 +1,6 @@
 import asyncio
 from hypercorn.config import Config
 from hypercorn.asyncio import serve
-
 from schuaro import app
 import os
 
